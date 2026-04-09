@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCore · Sistema Académico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="index.css">
+<style>
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="brand" href="index.html">
+    <div class="bmark">Ec</div>
+    <span class="bname">EduCore</span>
+  </a>
+  <div class="nav-links">
+    <button class="nl" onclick="window.scrollTo({top:0,behavior:'smooth'})">Inicio</button>
+    <button class="nl" onclick="scrollToId('sec-roles')">Roles</button>
+    <button class="nl" onclick="scrollToId('sec-steps')">Cómo funciona</button>
+    <button class="nl" onclick="modalSoporte()">Soporte</button>
+  </div>
+  <div class="nav-r">
+    <button class="btn-o" onclick="irLogin()">Iniciar sesión</button>
+    <button class="btn-s" onclick="irLogin()">Solicitar acceso</button>
+  </div>
+  <button class="ham" id="ham-btn" onclick="toggleMenu()" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mob-menu" id="mob-menu">
+  <button class="mob-nl" onclick="closeMenu();window.scrollTo({top:0,behavior:'smooth'})">Inicio</button>
+  <button class="mob-nl" onclick="closeMenu();scrollToId('sec-roles')">Roles</button>
+  <button class="mob-nl" onclick="closeMenu();scrollToId('sec-steps')">Cómo funciona</button>
+  <button class="mob-nl" onclick="closeMenu();modalSoporte()">Soporte</button>
+  <div class="mob-sep"></div>
+  <button class="mob-btn-o" onclick="closeMenu();irLogin()" style="margin-bottom:8px">Iniciar sesión</button>
+  <button class="mob-btn-s" onclick="closeMenu();irLogin()">Solicitar acceso</button>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hbadge"><div class="hbdot"></div>Sistema de gestión académica · 2026</div>
+  <h1>Gestión académica <em>completa</em><br>en una sola plataforma</h1>
+  <p>EduCore centraliza estudiantes, notas, horarios, pagos e inscripciones. Cada usuario accede únicamente a lo que le corresponde, según su rol.</p>
+  <div class="hero-btns">
+    <button class="btn-xl" onclick="irLogin()">Ingresar al sistema</button>
+    <button class="btn-xl-o" onclick="scrollToId('sec-roles')">Ver roles disponibles</button>
+  </div>
+  <p class="hero-note">Administrador · Docente · Estudiante · Secretaría</p>
+</section>
+
+<!-- PREVIEW -->
+<div class="preview-wrap">
+  <div class="pch">
+    <div class="pdot"></div><div class="pdot"></div><div class="pdot"></div>
+    <span class="purl">educore.edu · panel principal</span>
+  </div>
+  <div class="pbody">
+    <div class="psb">
+      <div class="pslogo">
+        <div style="width:16px;height:16px;border-radius:4px;background:var(--blue);flex-shrink:0"></div>
+        <span style="font-size:10px;font-weight:600">EduCore</span>
+      </div>
+      <div class="psi on"><div class="psdot"></div>Dashboard</div>
+      <div class="psi"><div class="psdot"></div>Estudiantes</div>
+      <div class="psi"><div class="psdot"></div>Docentes</div>
+      <div class="psi"><div class="psdot"></div>Cursos</div>
+      <div class="psi"><div class="psdot"></div>Horarios</div>
+      <div class="psi"><div class="psdot"></div>Inscripciones</div>
+      <div class="psi"><div class="psdot"></div>Pagos</div>
+      <div class="psi"><div class="psdot"></div>Reportes</div>
+    </div>
+    <div class="pmain">
+      <div class="ph-line"></div>
+      <div class="pm-cards">
+        <div class="pmc"><div class="pmcv" style="background:var(--blue-m)"></div><div class="pmcl"></div></div>
+        <div class="pmc"><div class="pmcv" style="background:var(--teal-m)"></div><div class="pmcl"></div></div>
+        <div class="pmc"><div class="pmcv" style="background:var(--amber-m)"></div><div class="pmcl"></div></div>
+        <div class="pmc"><div class="pmcv" style="background:var(--purple-m)"></div><div class="pmcl"></div></div>
+      </div>
+      <div class="pm-row">
+        <div class="pm-chart">
+          <div style="height:7px;background:var(--border);border-radius:3px;width:95px"></div>
+          <div class="pm-bars">
+            <div class="pmbar" style="height:42%"></div>
+            <div class="pmbar hi" style="height:70%"></div>
+            <div class="pmbar" style="height:55%"></div>
+            <div class="pmbar" style="height:47%"></div>
+            <div class="pmbar hi" style="height:82%"></div>
+            <div class="pmbar" style="height:61%"></div>
+            <div class="pmbar" style="height:50%"></div>
+          </div>
+        </div>
+        <div class="pm-side">
+          <div class="pm-line" style="width:72px"></div>
+          <div class="pm-line"></div>
+          <div class="pm-line" style="width:78%"></div>
+          <div class="pm-line" style="width:58%"></div>
+          <div class="pm-line" style="width:88%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- ROLES -->
+<section class="sec" id="sec-roles">
+  <div class="slbl">Acceso por rol</div>
+  <div class="stitle">Cuatro perfiles, una sola plataforma</div>
+  <div class="ssub">Cada usuario ve únicamente lo que le corresponde. El flujo de trabajo es natural e intuitivo para cada perfil.</div>
+  <div class="roles-g">
+    <div class="rc" onclick="irLoginCon('admin')">
+      <span class="rcarr">→</span>
+      <div class="rcico" style="background:var(--blue-l)">🛡️</div>
+      <div class="rct">Administrador</div>
+      <div class="rcd">Control total del sistema. Usuarios, permisos, configuración y reportes generales.</div>
+      <div class="rcp">
+        <div class="pr"><div class="pon"></div>Gestión de usuarios y roles</div>
+        <div class="pr"><div class="pon"></div>Configuración del sistema</div>
+        <div class="pr"><div class="pon"></div>Acceso completo a módulos</div>
+      </div>
+    </div>
+    <div class="rc" onclick="irLoginCon('docente')">
+      <span class="rcarr">→</span>
+      <div class="rcico" style="background:var(--teal-l)">📋</div>
+      <div class="rct">Docente</div>
+      <div class="rcd">Registra notas, controla asistencia y gestiona sus cursos asignados.</div>
+      <div class="rcp">
+        <div class="pr"><div class="pon"></div>Registro de notas</div>
+        <div class="pr"><div class="pon"></div>Control de asistencia</div>
+        <div class="pr"><div class="poff"></div>Pagos y finanzas</div>
+      </div>
+    </div>
+    <div class="rc" onclick="irLoginCon('estudiante')">
+      <span class="rcarr">→</span>
+      <div class="rcico" style="background:var(--purple-l)">🎓</div>
+      <div class="rct">Estudiante</div>
+      <div class="rcd">Consulta notas, horarios, pagos y gestiona solicitudes de inscripción.</div>
+      <div class="rcp">
+        <div class="pr"><div class="pon"></div>Ver propias notas</div>
+        <div class="pr"><div class="pon"></div>Estado de pagos</div>
+        <div class="pr"><div class="poff"></div>Datos de otros alumnos</div>
+      </div>
+    </div>
+    <div class="rc" onclick="irLoginCon('secretaria')">
+      <span class="rcarr">→</span>
+      <div class="rcico" style="background:var(--amber-l)">📁</div>
+      <div class="rct">Personal</div>
+      <div class="rcd">Inscripciones, pagos, expedientes y verificación de documentos.</div>
+      <div class="rcp">
+        <div class="pr"><div class="pon"></div>Registro de estudiantes</div>
+        <div class="pr"><div class="pon"></div>Inscripciones y pagos</div>
+        <div class="pr"><div class="poff"></div>Configuración del sistema</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- STEPS -->
+<section class="sec" id="sec-steps">
+  <div class="slbl">Cómo empezar</div>
+  <div class="stitle">Tres pasos para estar operando</div>
+  <div class="ssub">Sin capacitación extensa. Intuitivo desde el primer uso.</div>
+  <div class="steps-wrap">
+    <div class="step">
+      <div class="snum">1</div>
+      <div class="stl">Selecciona tu rol</div>
+      <div class="sdesc">Elige tu perfil en la pantalla de acceso. El sistema carga solo lo que te corresponde.</div>
+      <div style="margin-top:10px;display:flex;gap:4px;flex-wrap:wrap">
+        <span class="tag tb">Admin</span><span class="tag tt">Docente</span><span class="tag tp">Estudiante</span><span class="tag ta">Personal</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="snum">2</div>
+      <div class="stl">Ingresa tus credenciales</div>
+      <div class="sdesc">Correo institucional y contraseña asignada. Acceso seguro con verificación CAPTCHA.</div>
+      <div style="margin-top:10px;padding:9px 11px;background:var(--bg2);border-radius:var(--r);font-size:11px;color:var(--text2)">
+        correo@institución.edu<br><span style="letter-spacing:4px;color:var(--text3)">••••••••</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="snum">3</div>
+      <div class="stl">Accede a tu panel</div>
+      <div class="sdesc">Tu dashboard muestra tareas pendientes y accesos rápidos según tu rol.</div>
+      <div style="margin-top:10px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)">
+        <div style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0"></div>Panel activo y listo
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta">
+  <h2>¿Listo para ingresar al sistema?</h2>
+  <p>Selecciona tu rol y accede a tu panel de trabajo.</p>
+  <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
+    <button class="btn-xl" onclick="irLogin()">Ingresar ahora</button>
+    <button class="btn-xl-o" onclick="modalSoporte()">Contactar soporte</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="foot">
+  <div style="display:flex;align-items:center;gap:7px">
+    <div class="bmark" style="width:22px;height:22px;border-radius:6px;font-size:10px">Ec</div>
+    <span style="font-size:11px;color:var(--text3)">EduCore · Sistema de gestión académica · 2026</span>
+  </div>
+  <div class="fls">
+    <span class="fl" onclick="modalTerminos()">Términos de uso</span>
+    <span class="fl" onclick="modalPrivacidad()">Privacidad</span>
+    <span class="fl" onclick="modalSoporte()">Soporte técnico</span>
+    <span class="fl" onclick="modalManual()">Manual de usuario</span>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN OVERLAY — con CAPTCHA, tabs y registro
+════════════════════════════════════════════ -->
+<div id="login-overlay" onclick="if(event.target===this)closeLogin()">
+  <div class="lcard">
+
+    <!-- Cabecera -->
+    <div class="lcard-top">
+      <div class="lcard-logo">
+        <div class="bmark">Ec</div>
+        <span style="font-size:16px;font-weight:600;font-family:'Playfair Display',serif">EduCore</span>
+      </div>
+      <button class="lclose" onclick="closeLogin()">×</button>
+    </div>
+
+    <!-- Tabs Iniciar / Registrarse -->
+    <div class="ltabs">
+      <div class="ltab active" id="ltab-login"    onclick="switchLoginTab('login')">Iniciar sesión</div>
+      <div class="ltab"        id="ltab-register" onclick="switchLoginTab('register')">Registrarse</div>
+    </div>
+
+    <!-- ── FORMULARIO LOGIN ── -->
+    <div id="lfrm-login">
+      <div class="ltitle">Ingresa tus credenciales</div>
+
+      <!-- Error global -->
+      <div class="lgerr" id="l-err">Correo o contraseña incorrectos.</div>
+
+      <!-- Email -->
+      <div class="lfield" id="lf-email">
+        <label>Correo electrónico</label>
+        <input type="email" id="l-email" placeholder="correo@institución.edu" autocomplete="email">
+        <div class="ferr">Ingrese un correo válido.</div>
+      </div>
+
+      <!-- Contraseña -->
+      <div class="lfield" id="lf-pass">
+        <label>Contraseña</label>
+        <input type="password" id="l-pwd" placeholder="••••••••" autocomplete="current-password">
+        <div class="ferr">Mínimo 6 caracteres.</div>
+      </div>
+
+      <!-- CAPTCHA -->
+      <div class="lfield" id="lf-captcha">
+        <label>Verificación de seguridad</label>
+        <div class="captcha-wrap">
+          <span id="captcha-text"></span>
+          <button type="button" class="captcha-btn" onclick="refreshCaptcha()">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Nuevo
+          </button>
+        </div>
+        <input type="text" id="l-captcha" placeholder="Ingrese el código de arriba" autocomplete="off">
+        <div class="ferr">Código incorrecto. Inténtelo de nuevo.</div>
+      </div>
+
+      <!-- ¿Olvidaste contraseña? -->
+      <div class="hrow">
+        <span class="htxt"></span>
+        <span class="hlink" onclick="openRecoverModal()">¿Olvidaste tu contraseña?</span>
+      </div>
+
+      <button class="bfull" onclick="doLogin()">Ingresar al sistema</button>
+      <div class="back-link" onclick="closeLogin()">← Volver al inicio</div>
+
+    </div><!-- /lfrm-login -->
+
+    <!-- ── FORMULARIO REGISTRO ── -->
+    <div id="lfrm-register" style="display:none">
+      <div class="ltitle">Crear cuenta</div>
+      <div class="lsub">Completa los datos para solicitar acceso al sistema.</div>
+
+      <!-- Error / éxito global -->
+      <div class="lgerr"    id="r-err">Por favor corrija los errores marcados.</div>
+      <div class="lgsuccess" id="r-ok"></div>
+
+      <div class="lform-row">
+        <div class="lfield" id="lf-r-name">
+          <label>Nombre</label>
+          <input type="text" id="r-name" placeholder="Nombre">
+          <div class="ferr">Campo requerido.</div>
+        </div>
+        <div class="lfield" id="lf-r-last">
+          <label>Apellido</label>
+          <input type="text" id="r-last" placeholder="Apellido">
+          <div class="ferr">Campo requerido.</div>
+        </div>
+      </div>
+
+      <div class="lfield" id="lf-r-email">
+        <label>Correo electrónico</label>
+        <input type="email" id="r-email" placeholder="correo@ejemplo.com">
+        <div class="ferr">Ingrese un correo válido.</div>
+      </div>
+
+      <div class="lfield">
+        <label>Rol solicitado</label>
+        <select id="r-role">
+          <option value="admin">Administrador</option>
+          <option value="secretaria">Secretaria</option>
+          <option value="docente" selected>Docente</option>
+          <option value="director">Director</option>
+        </select>
+      </div>
+
+      <div class="lform-row">
+        <div class="lfield" id="lf-r-pass">
+          <label>Contraseña</label>
+          <input type="password" id="r-pass" placeholder="••••••••">
+          <div class="ferr">Mínimo 6 caracteres.</div>
+        </div>
+        <div class="lfield" id="lf-r-pass2">
+          <label>Confirmar</label>
+          <input type="password" id="r-pass2" placeholder="••••••••">
+          <div class="ferr">Las contraseñas no coinciden.</div>
+        </div>
+      </div>
+
+      <button class="bfull-green" onclick="doRegister()">Crear cuenta</button>
+      <div class="back-link" style="margin-top:12px" onclick="switchLoginTab('login')">← Volver a iniciar sesión</div>
+    </div><!-- /lfrm-register -->
+
+  </div><!-- /lcard -->
+</div><!-- /login-overlay -->
+
+<!-- ═══════════════════════════════════
+     MODAL RECUPERAR CONTRASEÑA
+════════════════════════════════════ -->
+<div id="recover-overlay" onclick="if(event.target===this)closeRecoverModal()">
+  <div class="rcard">
+    <h3>Recuperar contraseña</h3>
+    <p>Ingresa tu correo institucional y te enviaremos un enlace para restablecer tu contraseña.</p>
+
+    <div class="lfield" id="lf-rec-email">
+      <label>Correo electrónico</label>
+      <input type="email" id="rec-email" placeholder="correo@institución.edu" autocomplete="email">
+      <div class="ferr">Ingrese un correo válido.</div>
+    </div>
+
+    <div class="rsuccess" id="rec-ok">✓ Enlace enviado. Revisa tu bandeja de entrada.</div>
+
+    <div class="rcard-actions">
+      <button class="rbtn-cancel" onclick="closeRecoverModal()">Cancelar</button>
+      <button class="rbtn-send"   onclick="doRecover()">Enviar enlace</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GENÉRICO (soporte, términos, etc.) -->
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<script src="index.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,4 @@
+email:'admin@educore.com,      password:'123456'
+email:'docente@educore.com,    password:'123456'
+email:'secretaria@educore.com, password:'123456'
+email:'alumno@educore.com,     password:'123456'
