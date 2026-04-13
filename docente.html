@@ -188,15 +188,11 @@
         </select>
         <select id="sch-filter-day" onchange="renderScheduleList()">
           <option value="">Todos los días</option>
-          <option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option>
+          <option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sabado</option>
         </select>
-        <button class="btn btn-primary" onclick="openScheduleModal()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nueva Clase
-        </button>
       </div>
       <div class="card"><div class="table-wrap"><table>
-        <thead><tr><th>ID</th><th>Curso</th><th>Día</th><th>Hora Inicio</th><th>Hora Fin</th><th>Materia</th><th>Docente</th><th>Aula</th><th>Acciones</th></tr></thead>
+        <thead><tr><th>ID</th><th>Curso</th><th>Día</th><th>Hora Inicio</th><th>Hora Fin</th><th>Materia</th><th>Docente</th><th>Acciones</th></tr></thead>
         <tbody id="schedule-tbody"></tbody>
       </table></div></div>
     </div>
@@ -386,7 +382,7 @@
       <input type="hidden" id="sch-id">
       <div class="form-row">
         <div class="form-group"><label>Curso*</label><select id="sch-course"><option>1° Primaria A</option><option>2° Primaria B</option><option>3° Secundaria A</option><option>4° Bachillerato A</option><option>5° Bachillerato A</option></select></div>
-        <div class="form-group"><label>Día*</label><select id="sch-day"><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option></select></div>
+        <div class="form-group"><label>Día*</label><select id="sch-day"><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sabado</option></select></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Hora inicio*</label><input type="time" id="sch-start" value="07:00"><span class="err-msg">Requerido</span></div>
@@ -726,6 +722,6 @@
  
 <div id="toast-container"></div>
  
-<script src="admindashboard.js"></script>
+<script src="docente.js"></script>
 </body>
 </html>
