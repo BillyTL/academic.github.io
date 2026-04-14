@@ -1,5 +1,7 @@
 const API_URL = 'api.php';
 
+// Estado global de la aplicación de secretaría.
+// Aquí se cargan los datos desde el backend para usar en todas las secciones.
 const state = {
   students: [],
   teachers: [],
@@ -13,6 +15,10 @@ const state = {
   grades: []
 };
 
+// Función genérica para llamar al backend PHP desde el panel de secretaría.
+// resource: nombre del recurso.
+// action: operación a ejecutar ('list', 'save', 'delete', ...).
+// payload: datos enviados en POST cuando se necesita guardar o eliminar.
 async function apiFetch(resource, action = 'list', payload = null) {
   const url = new URL(API_URL, window.location.href);
   url.searchParams.set('resource', resource);
@@ -33,8 +39,10 @@ async function apiFetch(resource, action = 'list', payload = null) {
   return data;
 }
 
-// FIX: use Promise.allSettled so one failed resource (e.g. payments) doesn't wipe all others.
-// FIX: removed the && x.length guard — an empty array from the API is a valid response.
+// FIX: usa Promise.allSettled para que un recurso fallido no afecte a los demás.
+// FIX: se eliminó la condición && x.length — un arreglo vacío de la API es una respuesta válida.
+// Carga inicial de todos los recursos desde el backend.
+// Si alguno falla, los demás siguen cargando gracias a Promise.allSettled.
 async function loadInitialData() {
   const resources = ['students','teachers','subjects','courses','schedule','users','payments','inscriptions','attendance','grades'];
   const results = await Promise.allSettled(resources.map(r => apiFetch(r)));
@@ -61,6 +69,7 @@ function closeSidebar() {
   document.getElementById('sidebar-overlay').classList.remove('show');
 }
 
+// Cambia la sección activa en el panel de secretaría.
 function goTo(page, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -140,7 +149,7 @@ function actionBtns(editFn, delFn) {
   return `<div style="display:flex;gap:5px"><button class="btn btn-sm btn-secondary btn-icon" title="Editar" onclick="${editFn}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="btn btn-sm btn-danger btn-icon" title="Eliminar" onclick="${delFn}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></div>`;
 }
 
-// FIX: options now use id as value to avoid ambiguity between same-named courses/teachers
+// FIX: las opciones ahora usan id como value para evitar ambigüedades cuando hay nombres iguales.
 function userOptions(selected = '') {
   return state.users.map(u => `<option value="${u.id}" ${String(u.id) === String(selected) ? 'selected' : ''}>${u.name || ''}</option>`).join('');
 }

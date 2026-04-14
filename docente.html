@@ -4,13 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduCore - Sistema de Gestión Académica</title>
-//entrar a la carpeta styless y luego al admindashboard.css
+<!-- Aquí se carga el CSS principal del panel docente. Cambia la ruta si el archivo está en otra carpeta. -->
 <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
 <!-- ===== APP ===== -->
+<!-- Este archivo contiene el panel del docente. Las secciones principales se muestran/ocultan con JavaScript según la navegación. -->
 <div id="app">
   <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <!-- Sidebar / menú lateral del panel docente -->
   <aside id="sidebar">
     <div class="sidebar-logo">
       <div class="s-wrap">
@@ -46,6 +48,7 @@
     </nav>
   </aside>
  
+  <!-- Encabezado superior: menú hamburguesa, reloj, notificaciones y usuario -->
   <header id="header">
     <button class="hamburger" onclick="openSidebar()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -69,8 +72,9 @@
     </button>
   </header>
  
+  <!-- Contenido principal: cada bloque con id page-... es una pestaña del panel -->
   <main id="main-content">
- 
+    <!-- El contenido principal se organiza en páginas internas que se muestran según la navegación. -->
     <!-- DASHBOARD -->
     <div id="page-dashboard" class="page active">
       <div class="page-header"><div class="page-header-left"><h2>Dashboard</h2><p>Bienvenido al Sistema EduCore</p></div></div>
@@ -372,9 +376,9 @@
   </main>
 </div>
  
-<!-- ======= MODALS ======= -->
- 
-<!-- Schedule Modal -->
+<!-- ======= MODALES ======= -->
+
+<!-- Modal de horario -->
 <div class="modal-bg" id="modal-schedule">
   <div class="modal">
     <div class="modal-header"><h3 id="modal-schedule-title">Nueva Clase</h3><button class="modal-close" onclick="closeModal('modal-schedule')">×</button></div>
@@ -400,8 +404,8 @@
     </div>
   </div>
 </div>
- 
-<!-- Invoice Modal -->
+
+<!-- Modal de factura -->
 <div class="modal-bg" id="modal-invoice">
   <div class="modal" style="max-width:480px">
     <div class="modal-header"><h3>Factura generada</h3><button class="modal-close" onclick="closeModal('modal-invoice')">×</button></div>
@@ -431,8 +435,8 @@
     </div>
   </div>
 </div>
- 
-<!-- Notify Modal -->
+
+<!-- Modal de notificación -->
 <div class="modal-bg" id="modal-notify">
   <div class="modal" style="max-width:440px">
     <div class="modal-header"><h3>Notificar al responsable</h3><button class="modal-close" onclick="closeModal('modal-notify')">×</button></div>
@@ -464,8 +468,8 @@
     </div>
   </div>
 </div>
- 
-<!-- Recover Password Modal -->
+
+<!-- Modal de recuperar contraseña -->
 <div class="modal-bg" id="modal-recover">
   <div class="modal" style="max-width:400px">
     <div class="modal-header"><h3>Recuperar contraseña</h3><button class="modal-close" onclick="closeModal('modal-recover')">×</button></div>
@@ -486,8 +490,8 @@
     </div>
   </div>
 </div>
- 
-<!-- Student Modal -->
+
+<!-- Modal de estudiante -->
 <div class="modal-bg" id="modal-student">
   <div class="modal">
     <div class="modal-header"><h3 id="modal-student-title">Nuevo Estudiante</h3><button class="modal-close" onclick="closeModal('modal-student')">×</button></div>
@@ -517,8 +521,8 @@
     </div>
   </div>
 </div>
- 
-<!-- Teacher Modal -->
+
+<!-- Modal de docente -->
 <div class="modal-bg" id="modal-teacher">
   <div class="modal">
     <div class="modal-header"><h3 id="modal-teacher-title">Nuevo Docente</h3><button class="modal-close" onclick="closeModal('modal-teacher')">×</button></div>
@@ -545,8 +549,8 @@
     </div>
   </div>
 </div>
- 
-<!-- Subject Modal -->
+
+<!-- Modal de materia -->
 <div class="modal-bg" id="modal-subject">
   <div class="modal">
     <div class="modal-header"><h3 id="modal-subject-title">Nueva Materia</h3><button class="modal-close" onclick="closeModal('modal-subject')">×</button></div>
@@ -569,8 +573,8 @@
     </div>
   </div>
 </div>
- 
-<!-- Course Modal -->
+
+<!-- Modal de curso -->
 <div class="modal-bg" id="modal-course">
   <div class="modal">
     <div class="modal-header"><h3 id="modal-course-title">Nuevo Curso</h3><button class="modal-close" onclick="closeModal('modal-course')">×</button></div>
@@ -596,8 +600,8 @@
     </div>
   </div>
 </div>
- 
-<!-- Grade Modal -->
+
+<!-- Modal de nota -->
 <div class="modal-bg" id="modal-grade">
   <div class="modal">
     <div class="modal-header"><h3 id="modal-grade-title">Registrar Nota</h3><button class="modal-close" onclick="closeModal('modal-grade')">×</button></div>
@@ -623,8 +627,8 @@
     </div>
   </div>
 </div>
- 
-<!-- Payment Modal -->
+
+<!-- Modal de pago -->
 <div class="modal-bg" id="modal-payment">
   <div class="modal">
     <div class="modal-header"><h3 id="modal-payment-title">Registrar Pago</h3><button class="modal-close" onclick="closeModal('modal-payment')">×</button></div>
@@ -650,8 +654,8 @@
     </div>
   </div>
 </div>
- 
-<!-- Inscription Modal -->
+
+<!-- Modal de inscripción -->
 <div class="modal-bg" id="modal-inscription">
   <div class="modal">
     <div class="modal-header"><h3 id="modal-inscription-title">Nueva Inscripción</h3><button class="modal-close" onclick="closeModal('modal-inscription')">×</button></div>
@@ -677,8 +681,8 @@
     </div>
   </div>
 </div>
- 
-<!-- User Modal -->
+
+<!-- Modal de usuario -->
 <div class="modal-bg" id="modal-user">
   <div class="modal">
     <div class="modal-header"><h3 id="modal-user-title">Nuevo Usuario</h3><button class="modal-close" onclick="closeModal('modal-user')">×</button></div>
@@ -705,8 +709,8 @@
     </div>
   </div>
 </div>
- 
-<!-- Confirm Modal -->
+
+<!-- Modal de confirmación -->
 <div class="modal-bg" id="modal-confirm">
   <div class="modal" style="max-width:380px">
     <div class="modal-header"><h3>Confirmar eliminación</h3><button class="modal-close" onclick="closeModal('modal-confirm')">×</button></div>

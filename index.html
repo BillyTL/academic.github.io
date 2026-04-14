@@ -14,7 +14,9 @@
 </head>
 <body>
 
-<!-- NAV -->
+<!-- Página pública principal: landing page para mostrar el producto y dirigir a login. -->
+<!-- NAVEGACIÓN -->
+<!-- Barra de navegación principal con enlaces a secciones y botones de acceso. -->
 <nav class="nav">
   <a class="brand" href="index.html">
     <div class="bmark">Ec</div>
@@ -35,7 +37,8 @@
   </button>
 </nav>
 
-<!-- MOBILE MENU -->
+<!-- MENÚ MÓVIL -->
+<!-- Menú responsive que aparece en dispositivos pequeños. -->
 <div class="mob-menu" id="mob-menu">
   <button class="mob-nl" onclick="closeMenu();window.scrollTo({top:0,behavior:'smooth'})">Inicio</button>
   <button class="mob-nl" onclick="closeMenu();scrollToId('sec-roles')">Roles</button>
@@ -46,7 +49,8 @@
   <button class="mob-btn-s" onclick="closeMenu();irLogin()">Solicitar acceso</button>
 </div>
 
-<!-- HERO -->
+<!-- SECCIÓN HERO -->
+<!-- Sección principal visible al cargar la página. Aquí va el mensaje principal y las llamadas a la acción. -->
 <section class="hero">
   <div class="hbadge"><div class="hbdot"></div>Sistema de gestión académica · 2026</div>
   <h1>Gestión académica <em>completa</em><br>en una sola plataforma</h1>
@@ -58,7 +62,8 @@
   <p class="hero-note">Administrador · Docente · Estudiante · Secretaría</p>
 </section>
 
-<!-- PREVIEW -->
+<!-- VISTA PREVIA -->
+<!-- Vista previa visual del producto: muestra el panel y sus secciones. -->
 <div class="preview-wrap">
   <div class="pch">
     <div class="pdot"></div><div class="pdot"></div><div class="pdot"></div>
@@ -115,6 +120,7 @@
 <div class="sep"></div>
 
 <!-- ROLES -->
+<!-- Descripción de los roles disponibles y sus capacidades dentro del sistema. -->
 <section class="sec" id="sec-roles">
   <div class="slbl">Acceso por rol</div>
   <div class="stitle">Cuatro perfiles, una sola plataforma</div>
@@ -169,7 +175,7 @@
 
 <div class="sep"></div>
 
-<!-- STEPS -->
+<!-- PASOS -->
 <section class="sec" id="sec-steps">
   <div class="slbl">Cómo empezar</div>
   <div class="stitle">Tres pasos para estar operando</div>
@@ -202,7 +208,8 @@
   </div>
 </section>
 
-<!-- CTA -->
+<!-- LLAMADA A LA ACCIÓN -->
+<!-- Llamada a la acción final para invitar al usuario a iniciar sesión o solicitar acceso. -->
 <div class="cta">
   <h2>¿Listo para ingresar al sistema?</h2>
   <p>Selecciona tu rol y accede a tu panel de trabajo.</p>
@@ -212,7 +219,7 @@
   </div>
 </div>
 
-<!-- FOOTER -->
+<!-- PIE -->
 <footer class="foot">
   <div style="display:flex;align-items:center;gap:7px">
     <div class="bmark" style="width:22px;height:22px;border-radius:6px;font-size:10px">Ec</div>

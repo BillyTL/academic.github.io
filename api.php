@@ -192,27 +192,60 @@ function handleTeachers($pdo) {
   echo json_encode($pdo->query($sql)->fetchAll());
 }
 
+function tableHasColumn($pdo, $table, $column) {
+  $allowed = ['Materias', 'Docente', 'Curso', 'Usuario'];
+  if (!in_array($table, $allowed, true)) {
+    return false;
+  }
+  try {
+    $stmt = $pdo->query("SHOW COLUMNS FROM `{$table}` LIKE '{$column}'");
+    return (bool)$stmt->fetch();
+  } catch (PDOException $e) {
+    return false;
+  }
+}
+
 // ─── SUBJECTS ───────────────────────────────────────────────────────────────
 
 function handleSubjects($pdo) {
   global $action;
+  $hasTeacherColumn = tableHasColumn($pdo, 'Materias', 'ID_docente');
 
   if ($action === 'save') {
     $body = json_decode(file_get_contents('php://input'), true);
     if (!is_array($body)) { http_response_code(400); echo json_encode(['error' => 'Payload inválido']); return; }
 
-    $id   = intval($body['id'] ?? 0);
-    $name = trim($body['name'] ?? '');
+    $id        = intval($body['id'] ?? 0);
+    $name      = trim($body['name'] ?? '');
+    $teacherId = intval($body['teacherId'] ?? 0);
     if (!$name) { http_response_code(400); echo json_encode(['error' => 'El nombre es obligatorio']); return; }
+    if ($hasTeacherColumn && !$teacherId) { http_response_code(400); echo json_encode(['error' => 'El docente es obligatorio']); return; }
 
     try {
       if ($id) {
-        $pdo->prepare('UPDATE Materias SET Nombre = :name WHERE Id_Materia = :id')->execute([':name' => $name, ':id' => $id]);
+        if ($hasTeacherColumn) {
+          $pdo->prepare('UPDATE Materias SET Nombre = :name, ID_docente = :teacherId WHERE Id_Materia = :id')
+              ->execute([':name' => $name, ':teacherId' => $teacherId, ':id' => $id]);
+        } else {
+          $pdo->prepare('UPDATE Materias SET Nombre = :name WHERE Id_Materia = :id')
+              ->execute([':name' => $name, ':id' => $id]);
+        }
       } else {
-        $pdo->prepare('INSERT INTO Materias (Nombre) VALUES (:name)')->execute([':name' => $name]);
+        if ($hasTeacherColumn) {
+          $pdo->prepare('INSERT INTO Materias (Nombre, ID_docente) VALUES (:name, :teacherId)')
+              ->execute([':name' => $name, ':teacherId' => $teacherId]);
+        } else {
+          $pdo->prepare('INSERT INTO Materias (Nombre) VALUES (:name)')
+              ->execute([':name' => $name]);
+        }
         $id = (int)$pdo->lastInsertId();
       }
-      $fetch = $pdo->prepare('SELECT Id_Materia AS id, Nombre AS name FROM Materias WHERE Id_Materia = :id');
+
+      if ($hasTeacherColumn) {
+        $fetch = $pdo->prepare('SELECT m.Id_Materia AS id, m.Nombre AS name, m.ID_docente AS teacherId, u.nombre AS teacher FROM Materias m LEFT JOIN Docente d ON m.ID_docente=d.ID_docente LEFT JOIN Usuario u ON d.ID_usuario=u.ID WHERE m.Id_Materia = :id');
+      } else {
+        $fetch = $pdo->prepare('SELECT Id_Materia AS id, Nombre AS name FROM Materias WHERE Id_Materia = :id');
+      }
       $fetch->execute([':id' => $id]);
       echo json_encode(['subject' => $fetch->fetch()]);
     } catch (PDOException $e) {
@@ -234,7 +267,11 @@ function handleSubjects($pdo) {
     return;
   }
 
-  echo json_encode($pdo->query("SELECT Id_Materia AS id, Nombre AS name FROM Materias")->fetchAll());
+  if ($hasTeacherColumn) {
+    echo json_encode($pdo->query("SELECT m.Id_Materia AS id, m.Nombre AS name, m.ID_docente AS teacherId, u.nombre AS teacher FROM Materias m LEFT JOIN Docente d ON m.ID_docente=d.ID_docente LEFT JOIN Usuario u ON d.ID_usuario=u.ID")->fetchAll());
+  } else {
+    echo json_encode($pdo->query('SELECT Id_Materia AS id, Nombre AS name FROM Materias')->fetchAll());
+  }
 }
 
 // ─── COURSES ────────────────────────────────────────────────────────────────

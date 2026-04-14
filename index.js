@@ -1,7 +1,8 @@
 
 
-// ── NAVIGATION ──
+// ── NAVEGACIÓN ──
 
+// Funciones para controlar el menú móvil y la navegación de la página principal.
 function toggleMenu() {
   const menu = document.getElementById('mob-menu');
   const btn = document.getElementById('ham-btn');

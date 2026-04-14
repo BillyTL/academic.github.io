@@ -1,3 +1,5 @@
+// Archivo JS del panel docente.
+// Aquí se definen los datos, las llamadas al servidor, la navegación y el renderizado del panel.
 const API_URL = 'api.php';
 
 const state = {
@@ -24,6 +26,10 @@ const state = {
   ]
 };
 
+// Función genérica para llamar al backend PHP.
+// resource: nombre del recurso.
+// action: operación a ejecutar ('list', 'save', 'delete', ...).
+// payload: datos enviados en POST cuando se necesita guardar o eliminar.
 async function apiFetch(resource, action = 'list', payload = null) {
   const url = new URL(API_URL, window.location.href);
   url.searchParams.set('resource', resource);
@@ -38,6 +44,8 @@ async function apiFetch(resource, action = 'list', payload = null) {
   return await response.json();
 }
 
+// Carga inicial de datos desde la API.
+// Guarda los recursos en el estado global para usarlos en el panel.
 async function loadInitialData() {
   try {
     const [students, teachers, courses, schedules] = await Promise.all([
@@ -69,6 +77,7 @@ function getTeacherCourses() {
   return [...new Set(state.schedules.filter(item => item.teacher === teacherName()).map(item => item.course))];
 }
 
+// Inicializa la interfaz del docente cuando se carga la página.
 async function initDocente() {
   updateClock();
   setInterval(updateClock, 60000);
@@ -85,6 +94,7 @@ async function initDocente() {
 
 window.addEventListener('DOMContentLoaded', initDocente);
 
+// Abre el menú lateral del panel docente.
 function openSidebar() {
   document.getElementById('sidebar').classList.add('open');
   document.getElementById('sidebar-overlay').classList.add('show');
@@ -95,6 +105,7 @@ function closeSidebar() {
   document.getElementById('sidebar-overlay').classList.remove('show');
 }
 
+// Cambia la sección visible en el contenido principal y marca el elemento activo del menú.
 function goTo(page, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));

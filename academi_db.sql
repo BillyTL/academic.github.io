@@ -33,6 +33,7 @@ CREATE TABLE Curso (
 CREATE TABLE Materias (
   Id_Materia INT          NOT NULL AUTO_INCREMENT,
   Nombre     VARCHAR(100) NOT NULL,
+  ID_docente INT          NULL,
   PRIMARY KEY (Id_Materia)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -66,6 +67,9 @@ CREATE TABLE Docente (
   PRIMARY KEY (ID_docente),
   CONSTRAINT fk_doc_usuario FOREIGN KEY (ID_usuario) REFERENCES Usuario (ID) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE Materias
+  ADD CONSTRAINT fk_mat_docente FOREIGN KEY (ID_docente) REFERENCES Docente (ID_docente) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- ------------------------------------------------------------
 -- TABLA: Administracion
