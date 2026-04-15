@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
-include 'conexion.php';
+require_once __DIR__ . '/../config/conexion.php';
 
 try {
   $pdo = getDb();
@@ -26,6 +26,7 @@ switch ($resource) {
   case 'courses':      handleCourses($pdo);      break;
   case 'schedule':     handleSchedule($pdo);     break;
   case 'users':        handleUsers($pdo);        break;
+  case 'auth':         handleAuth($pdo);         break;
   case 'inscriptions': handleInscriptions($pdo); break;
   case 'payments':     handlePayments($pdo);     break;
   case 'attendance':   handleAttendance($pdo);   break;
@@ -38,6 +39,10 @@ switch ($resource) {
 
 // ─── STUDENTS ───────────────────────────────────────────────────────────────
 
+// handleStudents: procesa las solicitudes para el recurso "students".
+// - action=save: crea o actualiza un estudiante.
+// - action=delete: elimina un estudiante y su usuario asociado.
+// - default: devuelve la lista de estudiantes.
 function handleStudents($pdo) {
   global $action;
 
@@ -111,6 +116,10 @@ function handleStudents($pdo) {
 
 // ─── TEACHERS ───────────────────────────────────────────────────────────────
 
+// handleTeachers: procesa solicitudes para el recurso "teachers".
+// - action=save: crea o actualiza un docente y su información asociada.
+// - action=delete: elimina un docente y su usuario asociado.
+// - default: devuelve la lista de docentes.
 function handleTeachers($pdo) {
   global $action;
 
@@ -192,6 +201,8 @@ function handleTeachers($pdo) {
   echo json_encode($pdo->query($sql)->fetchAll());
 }
 
+// tableHasColumn: helper para verificar si una columna existe en una tabla permitida.
+// Se usa en materias para soportar esquemas con o sin relación al docente.
 function tableHasColumn($pdo, $table, $column) {
   $allowed = ['Materias', 'Docente', 'Curso', 'Usuario'];
   if (!in_array($table, $allowed, true)) {
@@ -207,6 +218,10 @@ function tableHasColumn($pdo, $table, $column) {
 
 // ─── SUBJECTS ───────────────────────────────────────────────────────────────
 
+// handleSubjects: procesa solicitudes para el recurso "subjects".
+// - action=save: crea o actualiza una materia.
+// - action=delete: elimina una materia.
+// - default: devuelve la lista de materias.
 function handleSubjects($pdo) {
   global $action;
   $hasTeacherColumn = tableHasColumn($pdo, 'Materias', 'ID_docente');
@@ -276,6 +291,10 @@ function handleSubjects($pdo) {
 
 // ─── COURSES ────────────────────────────────────────────────────────────────
 
+// handleCourses: procesa solicitudes para el recurso "courses".
+// - action=save: crea o actualiza un curso.
+// - action=delete: elimina un curso.
+// - default: devuelve la lista de cursos.
 function handleCourses($pdo) {
   global $action;
 
@@ -341,6 +360,10 @@ function handleCourses($pdo) {
 
 // ─── SCHEDULE ───────────────────────────────────────────────────────────────
 
+// handleSchedule: procesa solicitudes para el recurso "schedule".
+// - action=save: crea o actualiza un horario.
+// - action=delete: elimina un horario.
+// - default: devuelve la lista de horarios.
 function handleSchedule($pdo) {
   global $action;
 
@@ -398,6 +421,10 @@ function handleSchedule($pdo) {
 
 // ─── USERS ──────────────────────────────────────────────────────────────────
 
+// handleUsers: procesa solicitudes para el recurso "users".
+// - action=save: crea o actualiza un usuario.
+// - action=delete: elimina un usuario.
+// - default: devuelve la lista de usuarios.
 function handleUsers($pdo) {
   global $action;
 
@@ -458,8 +485,67 @@ function handleUsers($pdo) {
   echo json_encode($rows);
 }
 
+// handleAuth: procesa el login del usuario.
+// - action=login: valida email/contraseña contra la tabla Usuario.
+// Devuelve el usuario autenticado sin la contraseña.
+function handleAuth($pdo) {
+  global $action;
+
+  if ($action !== 'login') {
+    http_response_code(400);
+    echo json_encode(['error' => 'Acción inválida para auth']);
+    return;
+  }
+
+  $body = json_decode(file_get_contents('php://input'), true);
+  if (!is_array($body)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Payload inválido']);
+    return;
+  }
+
+  $email    = trim($body['email'] ?? '');
+  $password = trim($body['password'] ?? '');
+
+  if (!$email || !$password) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Email y contraseña son obligatorios']);
+    return;
+  }
+
+  $stmt = $pdo->prepare('SELECT ID, nombre, email, rol AS role, contraseña FROM Usuario WHERE email = :email LIMIT 1');
+  $stmt->execute([':email' => $email]);
+  $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  if (!$user) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Credenciales inválidas']);
+    return;
+  }
+
+  $hash = $user['contraseña'] ?? '';
+  $passwordMatches = false;
+  if ($hash && password_verify($password, $hash)) {
+    $passwordMatches = true;
+  } elseif ($password === $hash) {
+    $passwordMatches = true;
+  }
+
+  if (!$passwordMatches) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Credenciales inválidas']);
+    return;
+  }
+
+  unset($user['contraseña']);
+  echo json_encode(['success' => true, 'user' => $user]);
+}
+
 // ─── INSCRIPTIONS ───────────────────────────────────────────────────────────
 
+// handleInscriptions: procesa solicitudes para el recurso "inscriptions".
+// - action=save: crea una inscripción de estudiante y registra al estudiante en el sistema.
+// - default: devuelve la lista de inscripciones.
 function handleInscriptions($pdo) {
   global $action;
 
@@ -529,6 +615,10 @@ function handleInscriptions($pdo) {
 // Note: assumes a Pagos table with columns:
 //   ID_Pago (PK), ID_Estudiante (FK), Concepto, Monto, Metodo, Fecha, Estado
 
+// handlePayments: procesa solicitudes para el recurso "payments".
+// - action=save: crea o actualiza un pago.
+// - action=delete: elimina un pago.
+// - default: devuelve la lista de pagos.
 function handlePayments($pdo) {
   global $action;
 
@@ -592,6 +682,9 @@ function handlePayments($pdo) {
 // Note: assumes an Asistencia table with columns:
 //   ID_Asistencia (PK), ID_Estudiante (FK), Fecha, Estado
 
+// handleAttendance: procesa solicitudes para el recurso "attendance".
+// - action=save: crea o actualiza una asistencia.
+// - default: devuelve la lista de asistencias.
 function handleAttendance($pdo) {
   global $action;
 
@@ -634,6 +727,10 @@ function handleAttendance($pdo) {
 // Note: assumes a Calificaciones table with columns:
 //   Id_Calificacion (PK), Id_Estudiante (FK), Id_Materia (FK), Nota, Periodo
 
+// handleGrades: procesa solicitudes para el recurso "grades".
+// - action=save: crea o actualiza una nota.
+// - action=delete: elimina una nota.
+// - default: devuelve la lista de notas.
 function handleGrades($pdo) {
   global $action;
 

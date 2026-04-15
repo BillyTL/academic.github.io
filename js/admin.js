@@ -1,5 +1,5 @@
 // URL base del backend PHP. Todas las llamadas AJAX usan este archivo.
-const API_URL = 'api.php';
+const API_URL = window.location.pathname.includes('/views/') ? '../backend/API/api.php' : 'backend/API/api.php';
 
 const pageTitles = {
   dashboard: 'Dashboard',
@@ -981,7 +981,7 @@ function applyReportFilter(){
 function sendNotification(){toast('Función de notificaciones no implementada','warning');}
 function updateNotifyMsg(){}
 function sendRecovery(){toast('Recuperar contraseña no implementado','warning');}
-function doLogout(){window.location.href='index.html';}
+function doLogout(){window.location.href='../index.html';}
 
 // ======= INIT =======
 // Inicializa la app: reloj, carga de datos y renderizado de todas las secciones.

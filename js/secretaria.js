@@ -1,4 +1,4 @@
-const API_URL = 'api.php';
+const API_URL = window.location.pathname.includes('/views/') ? '../backend/API/api.php' : 'backend/API/api.php';
 
 // Estado global de la aplicación de secretaría.
 // Aquí se cargan los datos desde el backend para usar en todas las secciones.
@@ -590,4 +590,4 @@ function updateNotifyMsg() {}
 function sendRecovery() { toast('Recuperar contraseña no implementado', 'warning'); }
 function showReport() { toast('Reportes no implementado', 'warning'); }
 function applyReportFilter() { toast('Filtro de reporte no implementado', 'warning'); }
-function doLogout() { window.location.href = 'index.html'; }
+function doLogout() { window.location.href = '../index.html'; }
