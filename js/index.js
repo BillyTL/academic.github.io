@@ -1,8 +1,5 @@
-
-
 // ── NAVEGACIÓN ──
 
-// Funciones para controlar el menú móvil y la navegación de la página principal.
 function toggleMenu() {
   const menu = document.getElementById('mob-menu');
   const btn = document.getElementById('ham-btn');
@@ -87,10 +84,9 @@ function modalManual() {
 }
 
 // ═══════════════════════════════════════════════════════
-//  LOGIN — lógica integrada
+//  LOGIN
 // ═══════════════════════════════════════════════════════
 
-// ── Usuarios demo ──
 const DEMO_USERS = [
   { email:'admin@educore.com',      password:'123456', role:'admin'      },
   { email:'docente@educore.com',    password:'123456', role:'docente'    },
@@ -105,22 +101,19 @@ const ROLES_LABEL = {
 
 let selRole = 'admin';
 
-// ── Abrir / cerrar overlay ──
 function irLogin() { openLogin(); }
 
 function openLogin(preselect) {
   const role = preselect || sessionStorage.getItem('educore_preselect') || 'admin';
   const idMap = { admin:'rs-admin', docente:'rs-docente', estudiante:'rs-est', secretaria:'rs-sec' };
   pickRole(role, idMap[role]);
-  // Limpiar login
   document.getElementById('l-email').value = '';
   document.getElementById('l-pwd').value   = '';
   document.getElementById('l-captcha').value = '';
   document.getElementById('l-err').classList.remove('show');
   ['lf-email','lf-pass','lf-captcha'].forEach(clearErr);
   refreshCaptcha();
-  // Asegurarse que empieza en tab login
-  switchLoginTab('login');
+  // ← ya no va switchLoginTab('login') aquí
   document.getElementById('login-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -130,21 +123,11 @@ function closeLogin() {
   document.body.style.overflow = '';
 }
 
-// ── Selector de rol ──
 function pickRole(role, id) {
   selRole = role;
   document.querySelectorAll('.rso').forEach(o => o.classList.remove('on'));
   const el = document.getElementById(id);
   if (el) el.classList.add('on');
-}
-
-// ── Tabs login / registro ──
-function switchLoginTab(tab) {
-  const isLogin = tab === 'login';
-  document.getElementById('lfrm-login').style.display    = isLogin ? 'block' : 'none';
-  document.getElementById('lfrm-register').style.display = isLogin ? 'none'  : 'block';
-  document.getElementById('ltab-login').classList.toggle('active', isLogin);
-  document.getElementById('ltab-register').classList.toggle('active', !isLogin);
 }
 
 // ── CAPTCHA ──
@@ -166,7 +149,6 @@ function refreshCaptcha() {
   clearErr('lf-captcha');
 }
 
-// ── Helpers de validación ──
 function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 
 function setErr(fieldId, show) {
@@ -175,7 +157,6 @@ function setErr(fieldId, show) {
 }
 function clearErr(fieldId) { setErr(fieldId, false); }
 
-// ── doLogin ──
 async function doLogin() {
   const email   = document.getElementById('l-email').value.trim();
   const pass    = document.getElementById('l-pwd').value;
@@ -246,82 +227,13 @@ async function doLogin() {
   }
 }
 
-// ── doRegister ──
-function doRegister() {
-  const name  = document.getElementById('r-name').value.trim();
-  const last  = document.getElementById('r-last').value.trim();
-  const email = document.getElementById('r-email').value.trim();
-  const pass  = document.getElementById('r-pass').value;
-  const pass2 = document.getElementById('r-pass2').value;
-
-  let valid = true;
-
-  setErr('lf-r-name', !name);  if (!name)  valid = false;
-  setErr('lf-r-last', !last);  if (!last)  valid = false;
-
-  const emailOk = isValidEmail(email);
-  setErr('lf-r-email', !emailOk); if (!emailOk) valid = false;
-
-  const passOk = pass.length >= 6;
-  setErr('lf-r-pass', !passOk); if (!passOk) valid = false;
-
-  const pass2Ok = pass === pass2;
-  setErr('lf-r-pass2', !pass2Ok); if (!pass2Ok) valid = false;
-
-  const rerr = document.getElementById('r-err');
-  const rok  = document.getElementById('r-ok');
-
-  if (!valid) { rerr.classList.add('show'); return; }
-
-  rerr.classList.remove('show');
-  rok.textContent = `✓ Solicitud enviada para ${name} ${last}. Un administrador aprobará tu acceso.`;
-  rok.classList.add('show');
-
-  // Resetear formulario y volver a login tras 2.5s
-  setTimeout(() => {
-    rok.classList.remove('show');
-    ['r-name','r-last','r-email','r-pass','r-pass2'].forEach(id => document.getElementById(id).value = '');
-    switchLoginTab('login');
-    document.getElementById('l-email').value = email;
-  }, 2500);
-}
-
-// ── Recuperar contraseña ──
-function openRecoverModal() {
-  document.getElementById('rec-email').value = '';
-  document.getElementById('rec-ok').classList.remove('show');
-  clearErr('lf-rec-email');
-  document.getElementById('recover-overlay').classList.add('open');
-}
-
-function closeRecoverModal() {
-  document.getElementById('recover-overlay').classList.remove('open');
-}
-
-function doRecover() {
-  const email = document.getElementById('rec-email').value.trim();
-  const ok = isValidEmail(email);
-  setErr('lf-rec-email', !ok);
-  if (!ok) return;
-  document.getElementById('rec-ok').classList.add('show');
-  setTimeout(closeRecoverModal, 2500);
-}
-
 // ── Teclado ──
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    closeRecoverModal();
-    closeLogin();
-  }
+  if (e.key === 'Escape') closeLogin();
   if (e.key === 'Enter') {
-    if (document.getElementById('recover-overlay').classList.contains('open')) { doRecover(); return; }
-    if (document.getElementById('login-overlay').classList.contains('open')) {
-      if (document.getElementById('lfrm-register').style.display !== 'none') doRegister();
-      else doLogin();
-    }
+    if (document.getElementById('login-overlay').classList.contains('open')) doLogin();
   }
 });
 
-// Generar captcha inicial al cargar la página
+// Generar captcha inicial al cargar
 refreshCaptcha();
-

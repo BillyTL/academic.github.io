@@ -38,7 +38,6 @@
 </nav>
 
 <!-- MENÚ MÓVIL -->
-<!-- Menú responsive que aparece en dispositivos pequeños. -->
 <div class="mob-menu" id="mob-menu">
   <button class="mob-nl" onclick="closeMenu();window.scrollTo({top:0,behavior:'smooth'})">Inicio</button>
   <button class="mob-nl" onclick="closeMenu();scrollToId('sec-roles')">Roles</button>
@@ -50,7 +49,6 @@
 </div>
 
 <!-- SECCIÓN HERO -->
-<!-- Sección principal visible al cargar la página. Aquí va el mensaje principal y las llamadas a la acción. -->
 <section class="hero">
   <div class="hbadge"><div class="hbdot"></div>Sistema de gestión académica · 2026</div>
   <h1>Gestión académica <em>completa</em><br>en una sola plataforma</h1>
@@ -63,7 +61,6 @@
 </section>
 
 <!-- VISTA PREVIA -->
-<!-- Vista previa visual del producto: muestra el panel y sus secciones. -->
 <div class="preview-wrap">
   <div class="pch">
     <div class="pdot"></div><div class="pdot"></div><div class="pdot"></div>
@@ -120,7 +117,6 @@
 <div class="sep"></div>
 
 <!-- ROLES -->
-<!-- Descripción de los roles disponibles y sus capacidades dentro del sistema. -->
 <section class="sec" id="sec-roles">
   <div class="slbl">Acceso por rol</div>
   <div class="stitle">Cuatro perfiles, una sola plataforma</div>
@@ -209,7 +205,6 @@
 </section>
 
 <!-- LLAMADA A LA ACCIÓN -->
-<!-- Llamada a la acción final para invitar al usuario a iniciar sesión o solicitar acceso. -->
 <div class="cta">
   <h2>¿Listo para ingresar al sistema?</h2>
   <p>Selecciona tu rol y accede a tu panel de trabajo.</p>
@@ -233,9 +228,7 @@
   </div>
 </footer>
 
-<!-- ═══════════════════════════════════════════
-     LOGIN OVERLAY — con CAPTCHA, tabs y registro
-════════════════════════════════════════════ -->
+<!-- LOGIN OVERLAY -->
 <div id="login-overlay" onclick="if(event.target===this)closeLogin()">
   <div class="lcard">
 
@@ -248,13 +241,7 @@
       <button class="lclose" onclick="closeLogin()">×</button>
     </div>
 
-    <!-- Tabs Iniciar / Registrarse -->
-    <div class="ltabs">
-      <div class="ltab active" id="ltab-login"    onclick="switchLoginTab('login')">Iniciar sesión</div>
-      <div class="ltab"        id="ltab-register" onclick="switchLoginTab('register')">Registrarse</div>
-    </div>
-
-    <!-- ── FORMULARIO LOGIN ── -->
+    <!-- FORMULARIO LOGIN -->
     <div id="lfrm-login">
       <div class="ltitle">Ingresa tus credenciales</div>
 
@@ -289,97 +276,13 @@
         <div class="ferr">Código incorrecto. Inténtelo de nuevo.</div>
       </div>
 
-      <!-- ¿Olvidaste contraseña? -->
-      <div class="hrow">
-        <span class="htxt"></span>
-        <span class="hlink" onclick="openRecoverModal()">¿Olvidaste tu contraseña?</span>
-      </div>
-
       <button class="bfull" onclick="doLogin()">Ingresar al sistema</button>
       <div class="back-link" onclick="closeLogin()">← Volver al inicio</div>
 
     </div><!-- /lfrm-login -->
 
-    <!-- ── FORMULARIO REGISTRO ── -->
-    <div id="lfrm-register" style="display:none">
-      <div class="ltitle">Crear cuenta</div>
-      <div class="lsub">Completa los datos para solicitar acceso al sistema.</div>
-
-      <!-- Error / éxito global -->
-      <div class="lgerr"    id="r-err">Por favor corrija los errores marcados.</div>
-      <div class="lgsuccess" id="r-ok"></div>
-
-      <div class="lform-row">
-        <div class="lfield" id="lf-r-name">
-          <label>Nombre</label>
-          <input type="text" id="r-name" placeholder="Nombre">
-          <div class="ferr">Campo requerido.</div>
-        </div>
-        <div class="lfield" id="lf-r-last">
-          <label>Apellido</label>
-          <input type="text" id="r-last" placeholder="Apellido">
-          <div class="ferr">Campo requerido.</div>
-        </div>
-      </div>
-
-      <div class="lfield" id="lf-r-email">
-        <label>Correo electrónico</label>
-        <input type="email" id="r-email" placeholder="correo@ejemplo.com">
-        <div class="ferr">Ingrese un correo válido.</div>
-      </div>
-
-      <div class="lfield">
-        <label>Rol solicitado</label>
-        <select id="r-role">
-          <option value="admin">Administrador</option>
-          <option value="secretaria">Secretaria</option>
-          <option value="docente" selected>Docente</option>
-          <option value="director">Director</option>
-        </select>
-      </div>
-
-      <div class="lform-row">
-        <div class="lfield" id="lf-r-pass">
-          <label>Contraseña</label>
-          <input type="password" id="r-pass" placeholder="••••••••">
-          <div class="ferr">Mínimo 6 caracteres.</div>
-        </div>
-        <div class="lfield" id="lf-r-pass2">
-          <label>Confirmar</label>
-          <input type="password" id="r-pass2" placeholder="••••••••">
-          <div class="ferr">Las contraseñas no coinciden.</div>
-        </div>
-      </div>
-
-      <button class="bfull-green" onclick="doRegister()">Crear cuenta</button>
-      <div class="back-link" style="margin-top:12px" onclick="switchLoginTab('login')">← Volver a iniciar sesión</div>
-    </div><!-- /lfrm-register -->
-
   </div><!-- /lcard -->
 </div><!-- /login-overlay -->
-
-<!-- ═══════════════════════════════════
-     MODAL RECUPERAR CONTRASEÑA
-════════════════════════════════════ -->
-<div id="recover-overlay" onclick="if(event.target===this)closeRecoverModal()">
-  <div class="rcard">
-    <h3>Recuperar contraseña</h3>
-    <p>Ingresa tu correo institucional y te enviaremos un enlace para restablecer tu contraseña.</p>
-
-    <div class="lfield" id="lf-rec-email">
-      <label>Correo electrónico</label>
-      <input type="email" id="rec-email" placeholder="correo@institución.edu" autocomplete="email">
-      <div class="ferr">Ingrese un correo válido.</div>
-    </div>
-
-    <div class="rsuccess" id="rec-ok">✓ Enlace enviado. Revisa tu bandeja de entrada.</div>
-
-    <div class="rcard-actions">
-      <button class="rbtn-cancel" onclick="closeRecoverModal()">Cancelar</button>
-      <button class="rbtn-send"   onclick="doRecover()">Enviar enlace</button>
-    </div>
-  </div>
-</div>
 
 <!-- MODAL GENÉRICO (soporte, términos, etc.) -->
 <div id="modal-overlay" onclick="if(event.target===this)closeModal()">
