@@ -26,15 +26,11 @@ const state = {
   payments: [],
   inscriptions: [],
   users: [],
-  attendance: [],   // FIX: antes era {}, ahora es un arreglo para coincidir con la forma de la API
+  attendance: [],
   schedules: [],
   nextId: 100
 };
 
-// Función de ayuda para llamar al backend.
-// resource: nombre del recurso (por ejemplo 'students', 'teachers').
-// action: operación que se solicita al backend ('list', 'save', 'delete', etc.).
-// payload: datos adicionales enviados en POST cuando se necesita guardar o eliminar.
 async function apiFetch(resource, action = 'list', payload = null) {
   const url = new URL(API_URL, window.location.href);
   url.searchParams.set('resource', resource);
@@ -55,8 +51,6 @@ async function apiFetch(resource, action = 'list', payload = null) {
   return data;
 }
 
-// Carga inicial de todos los recursos desde el backend.
-// Guarda los datos en el estado global para que el resto de funciones pueda renderizarlos.
 async function loadInitialData() {
   const resources = ['students','teachers','subjects','courses','schedule','users','inscriptions','payments','attendance','grades'];
   const results = await Promise.allSettled(resources.map(r => apiFetch(r)));
@@ -74,7 +68,6 @@ async function loadInitialData() {
 }
 
 // ======= SIDEBAR =======
-// Controla la apertura y cierre del menú lateral en dispositivos móviles o pantallas pequeñas.
 function openSidebar(){
   document.getElementById('sidebar').classList.add('open');
   document.getElementById('sidebar-overlay').classList.add('show');
@@ -83,9 +76,8 @@ function closeSidebar(){
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('sidebar-overlay').classList.remove('show');
 }
- 
+
 // ======= NAVEGACION =======
-// Cambia de página dentro del área principal y marca el elemento activo del menú.
 function goTo(page, el) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -101,7 +93,7 @@ function goTo(page, el) {
   closeSidebar();
   if(page==='dashboard') updateDashboard();
 }
- 
+
 // ======= CLOCK =======
 function updateClock(){
   const now=new Date();
@@ -109,7 +101,7 @@ function updateClock(){
   const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   document.getElementById('header-clock').textContent=`${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} — ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 }
- 
+
 // ======= TOAST =======
 function toast(msg, type='') {
   const c=document.getElementById('toast-container');
@@ -120,29 +112,25 @@ function toast(msg, type='') {
   c.appendChild(el);
   setTimeout(()=>{el.style.animation='toastOut .25s ease forwards';setTimeout(()=>el.remove(),250);},3000);
 }
- 
+
 // ======= MODAL =======
-// Abre o cierra cualquiera de los modales definidos en el HTML.
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
- 
-// Muestra un modal de confirmación con mensaje y callback de eliminación.
+
 function confirmDelete(msg, cb) {
   document.getElementById('confirm-msg').textContent=msg;
   document.getElementById('confirm-ok-btn').onclick=()=>{cb();closeModal('modal-confirm');};
   openModal('modal-confirm');
 }
- 
+
 // ======= HELPERS =======
-// Funciones de utilidades generales para generar ids, badges y HTML repetido.
 function genId(prefix){return `${prefix}-${String(++state.nextId).padStart(3,'0')}`;}
 function badgeStatus(s){
   const map={Activo:'badge-success',Activa:'badge-success',Pagado:'badge-success',Inactivo:'badge-danger',Baja:'badge-danger',Vencido:'badge-danger',Pendiente:'badge-warning',Suspendido:'badge-warning'};
   return `<span class="badge ${map[s]||'badge-gray'}">${s}</span>`;
 }
 function calcAge(birth){if(!birth)return '—';const d=new Date(birth),n=new Date();return n.getFullYear()-d.getFullYear()-(n<new Date(n.getFullYear(),d.getMonth(),d.getDate())?1:0);}
-// FIX: usar id como value en las opciones para que los selects funcionen correctamente incluso si hay cursos con el mismo nombre.
 function teacherOptions(sel){return state.teachers.map(t=>`<option value="${t.id}" ${String(t.id)===String(sel)?'selected':''}>${t.name}</option>`).join('');}
 function courseOptions(sel){return state.courses.map(c=>`<option value="${c.id}" ${String(c.id)===String(sel)?'selected':''}>${c.name}</option>`).join('');}
 function studentOptions(sel){return state.students.map(s=>`<option value="${s.id}" ${String(s.id)===String(sel)?'selected':''}>${s.name}</option>`).join('');}
@@ -158,9 +146,8 @@ function actionBtns(editFn, delFn){
   </div>`;
 }
 function emptyRow(cols){return `<tr><td colspan="${cols}"><div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><p>No se encontraron registros</p></div></td></tr>`;}
- 
+
 // ======= DASHBOARD =======
-// Actualiza los indicadores y la vista principal del tablero con datos del estado.
 function updateDashboard(){
   document.getElementById('nb-students').textContent=state.students.filter(s=>s.status==='Activo').length;
   document.getElementById('dash-stats').innerHTML=`
@@ -171,7 +158,7 @@ function updateDashboard(){
     <div class="stat-card teal"><div class="stat-icon teal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="stat-val">${state.users.filter(u=>u.status==='Activo').length}</div><div class="stat-label">Usuarios Activos</div></div>
   `;
 }
- 
+
 // ======= ESTUDIANTES =======
 function getStudentFilters(){
   const q=(document.querySelector('#page-students .search-box input')||{}).value||'';
@@ -213,10 +200,11 @@ function openStudentModal(id){
   document.getElementById('s-course').innerHTML=courseOptions('');
   document.getElementById('s-user').innerHTML=studentOptions('');
   if(id){
-    const s=state.students.find(x=>x.id===id);
+    // FIX: comparar con String() para evitar mismatch numero/string
+    const s=state.students.find(x=>String(x.id)===String(id));
     if(!s) return;
     document.getElementById('modal-student-title').textContent='Editar Estudiante';
-    document.getElementById('s-user').value=s.name;
+    document.getElementById('s-user').value=String(s.userId||s.id);
     document.getElementById('s-course').value=String(s.courseId||'');
     document.getElementById('s-shift').value=s.turno||s.shift||'Mañana';
   } else {
@@ -229,18 +217,18 @@ function openStudentModal(id){
   openModal('modal-student');
 }
 function editStudent(id){openStudentModal(id);}
-// FIX: eliminar estudiante ahora llama a la API
 async function deleteStudent(id){
-  const s=state.students.find(x=>x.id===id);
+  // FIX: String() para comparar IDs correctamente
+  const s=state.students.find(x=>String(x.id)===String(id));
+  if(!s){toast('Estudiante no encontrado','error');return;}
   confirmDelete(`¿Eliminar al estudiante "${s.name}"? Esta acción no se puede deshacer.`, async ()=>{
     try {
       await apiFetch('students','delete',{id});
-      state.students=state.students.filter(x=>x.id!==id);
+      state.students=state.students.filter(x=>String(x.id)!==String(id));
       renderStudents();updateDashboard();toast('Estudiante eliminado','error');
     } catch(e){ toast(`Error: ${e.message}`,'error'); }
   });
 }
-// FIX: guardar estudiante ahora llama a la API (solo actualiza; la creación se hace desde Inscripciones)
 async function saveStudent(){
   const user=document.getElementById('s-user').value.trim();
   const courseId=document.getElementById('s-course').value;
@@ -259,7 +247,7 @@ async function saveStudent(){
     closeModal('modal-student');renderStudents();updateDashboard();toast('Estudiante actualizado','success');
   } catch(e){ toast(`Error: ${e.message}`,'error'); }
 }
- 
+
 // ======= DOCENTES =======
 function renderTeachers(q){
   if(q===undefined)q=(document.querySelector('#page-teachers .search-box input')||{}).value||'';
@@ -282,7 +270,9 @@ function renderTeachers(q){
 function openTeacherModal(id){
   document.getElementById('t-id').value=id||'';
   if(id){
-    const t=state.teachers.find(x=>x.id===id);if(!t)return;
+    // FIX: String() para comparar IDs correctamente
+    const t=state.teachers.find(x=>String(x.id)===String(id));
+    if(!t)return;
     document.getElementById('modal-teacher-title').textContent='Editar Docente';
     document.getElementById('t-user').value=t.name.replace('Prof. ','');
     document.getElementById('t-specialty').value=t.specialty;
@@ -303,18 +293,18 @@ function openTeacherModal(id){
   openModal('modal-teacher');
 }
 function editTeacher(id){openTeacherModal(id);}
-// FIX: eliminar docente ahora llama a la API
 async function deleteTeacher(id){
-  const t=state.teachers.find(x=>x.id===id);
+  // FIX: String() para comparar IDs correctamente
+  const t=state.teachers.find(x=>String(x.id)===String(id));
+  if(!t){toast('Docente no encontrado','error');return;}
   confirmDelete(`¿Eliminar al docente "${t.name}"?`, async ()=>{
     try {
       await apiFetch('teachers','delete',{id});
-      state.teachers=state.teachers.filter(x=>x.id!==id);
+      state.teachers=state.teachers.filter(x=>String(x.id)!==String(id));
       renderTeachers();updateDashboard();toast('Docente eliminado','error');
     } catch(e){ toast(`Error: ${e.message}`,'error'); }
   });
 }
-// FIX: guardar docente ahora llama a la API
 async function saveTeacher(){
   const user=document.getElementById('t-user').value.trim();
   const spec=document.getElementById('t-specialty').value.trim();
@@ -341,32 +331,33 @@ async function saveTeacher(){
     toast(id?'Docente actualizado':'Docente registrado','success');
   } catch(e){ toast(`Error: ${e.message}`,'error'); }
 }
- 
+
 // ======= MATERIAS =======
 function renderSubjects(q){
   if(q===undefined)q=(document.querySelector('#page-subjects .search-box input')||{}).value||'';
   const filtered=state.subjects.filter(s=>!q||((s.name||'')+(s.teacher||'')).toLowerCase().includes(q.toLowerCase()));
   const tbody=document.getElementById('subjects-tbody');
   if(!filtered.length){tbody.innerHTML=emptyRow(7);return;}
-  tbody.innerHTML = filtered.map((s, index) => {
-    const id = s.id || '';
-    return `
-            <tr>
-              <td style="font-size:11px;color:var(--gray-400)">${index + 1}</td>
-              <td>${s.name || ''}</td>
-              <td>${id || '—'}</td>
-              <td>—</td>
-              <td>—</td>
-              <td>${s.teacher || '—'}</td>
-              <td>${actionBtns("editSubject('" + id + "')", "deleteSubject('" + id + "')")}</td>
-            </tr>`;
+  tbody.innerHTML=filtered.map((s,index)=>{
+    const id=s.id||'';
+    return `<tr>
+      <td style="font-size:11px;color:var(--gray-400)">${index+1}</td>
+      <td>${s.name||''}</td>
+      <td>${id||'—'}</td>
+      <td>—</td>
+      <td>—</td>
+      <td>${s.teacher||'—'}</td>
+      <td>${actionBtns(`editSubject('${id}')`,`deleteSubject('${id}')`)}</td>
+    </tr>`;
   }).join('');
 }
 function openSubjectModal(id){
   document.getElementById('sub-id').value=id||'';
-  document.getElementById('sub-teacher').innerHTML = '<option value="">Seleccione un docente</option>' + teacherOptions('');
+  document.getElementById('sub-teacher').innerHTML='<option value="">Seleccione un docente</option>'+teacherOptions('');
   if(id){
-    const s=state.subjects.find(x=>x.id===id);if(!s)return;
+    // FIX: String() para comparar IDs correctamente
+    const s=state.subjects.find(x=>String(x.id)===String(id));
+    if(!s)return;
     document.getElementById('modal-subject-title').textContent='Editar Materia';
     document.getElementById('sub-name').value=s.name;
     document.getElementById('sub-teacher').value=String(s.teacherId||'');
@@ -380,18 +371,18 @@ function openSubjectModal(id){
   openModal('modal-subject');
 }
 function editSubject(id){openSubjectModal(id);}
-// FIX: eliminar materia ahora llama a la API
 async function deleteSubject(id){
-  const s=state.subjects.find(x=>x.id===id);
+  // FIX: String() para comparar IDs correctamente
+  const s=state.subjects.find(x=>String(x.id)===String(id));
+  if(!s){toast('Materia no encontrada','error');return;}
   confirmDelete(`¿Eliminar la materia "${s.name}"?`, async ()=>{
     try {
       await apiFetch('subjects','delete',{id});
-      state.subjects=state.subjects.filter(x=>x.id!==id);
+      state.subjects=state.subjects.filter(x=>String(x.id)!==String(id));
       renderSubjects();toast('Materia eliminada','error');
     } catch(e){ toast(`Error: ${e.message}`,'error'); }
   });
 }
-// FIX: guardar materia ahora llama a la API
 async function saveSubject(){
   const name=document.getElementById('sub-name').value.trim();
   const teacherId=document.getElementById('sub-teacher').value;
@@ -401,7 +392,7 @@ async function saveSubject(){
   if(!ok) return;
   const id=document.getElementById('sub-id').value;
   try {
-    const payload={name, teacherId:Number(teacherId)};
+    const payload={name,teacherId:Number(teacherId)};
     if(id) payload.id=id;
     await apiFetch('subjects','save',payload);
     const updated=await apiFetch('subjects');
@@ -410,7 +401,7 @@ async function saveSubject(){
     toast(id?'Materia actualizada':'Materia registrada','success');
   } catch(e){ toast(`Error: ${e.message}`,'error'); }
 }
- 
+
 // ======= CURSOS =======
 function renderCourses(q){
   if(q===undefined)q=(document.querySelector('#page-courses .search-box input')||{}).value||'';
@@ -434,7 +425,9 @@ function renderCourses(q){
 function openCourseModal(id){
   document.getElementById('c-id').value=id||'';
   if(id){
-    const c=state.courses.find(x=>x.id===id);if(!c)return;
+    // FIX: String() para comparar IDs correctamente
+    const c=state.courses.find(x=>String(x.id)===String(id));
+    if(!c)return;
     document.getElementById('modal-course-title').textContent='Editar Curso';
     document.getElementById('c-level').value=c.level;
     document.getElementById('c-parallel').value=c.Paralelo||c.parallel||'';
@@ -449,18 +442,18 @@ function openCourseModal(id){
   openModal('modal-course');
 }
 function editCourse(id){openCourseModal(id);}
-// FIX: eliminar curso ahora llama a la API
 async function deleteCourse(id){
-  const c=state.courses.find(x=>x.id===id);
+  // FIX: String() para comparar IDs correctamente
+  const c=state.courses.find(x=>String(x.id)===String(id));
+  if(!c){toast('Curso no encontrado','error');return;}
   confirmDelete(`¿Eliminar el curso "${c.name}"?`, async ()=>{
     try {
       await apiFetch('courses','delete',{id});
-      state.courses=state.courses.filter(x=>x.id!==id);
+      state.courses=state.courses.filter(x=>String(x.id)!==String(id));
       renderCourses();updateDashboard();toast('Curso eliminado','error');
     } catch(e){ toast(`Error: ${e.message}`,'error'); }
   });
 }
-// FIX: guardar curso ahora llama a la API
 async function saveCourse(){
   const level=document.getElementById('c-level').value;
   const parallel=document.getElementById('c-parallel').value.trim();
@@ -478,7 +471,7 @@ async function saveCourse(){
     toast(id?'Curso actualizado':'Curso registrado','success');
   } catch(e){ toast(`Error: ${e.message}`,'error'); }
 }
- 
+
 // ======= HORARIOS =======
 const dayOrder={Lunes:1,Martes:2,'Miércoles':3,Jueves:4,Viernes:5};
 function renderScheduleList(q){
@@ -513,7 +506,9 @@ function openScheduleModal(id){
   document.getElementById('sch-course-sel').innerHTML=courseOptions('');
   document.getElementById('sch-id').value=id||'';
   if(id){
-    const s=state.schedules.find(x=>x.id===id);if(!s)return;
+    // FIX: String() para comparar IDs correctamente
+    const s=state.schedules.find(x=>String(x.id)===String(id));
+    if(!s)return;
     document.getElementById('modal-schedule-title').textContent='Editar Clase';
     document.getElementById('sch-course-sel').value=String(s.courseId||'');
     document.getElementById('sch-day').value=s.day;
@@ -530,18 +525,18 @@ function openScheduleModal(id){
   openModal('modal-schedule');
 }
 function editSchedule(id){openScheduleModal(id);}
-// FIX: eliminar clase ahora llama a la API
 async function deleteSchedule(id){
-  const s=state.schedules.find(x=>x.id===id);
+  // FIX: String() para comparar IDs correctamente
+  const s=state.schedules.find(x=>String(x.id)===String(id));
+  if(!s){toast('Clase no encontrada','error');return;}
   confirmDelete(`¿Eliminar la clase de "${s.subject}" (${s.day} ${s.start})?`, async ()=>{
     try {
       await apiFetch('schedule','delete',{id});
-      state.schedules=state.schedules.filter(x=>x.id!==id);
+      state.schedules=state.schedules.filter(x=>String(x.id)!==String(id));
       renderScheduleList();toast('Clase eliminada','error');
     } catch(e){ toast(`Error: ${e.message}`,'error'); }
   });
 }
-// FIX: guardar clase ahora llama a la API
 async function saveSchedule(){
   const start=document.getElementById('sch-start').value;
   const end=document.getElementById('sch-end').value;
@@ -564,11 +559,10 @@ async function saveSchedule(){
     toast(id?'Clase actualizada':'Clase registrada','success');
   } catch(e){ toast(`Error: ${e.message}`,'error'); }
 }
- 
+
 // ======= NOTAS =======
 function renderGrades(q){
   if(q===undefined)q=(document.querySelector('#page-grades .search-box input')||{}).value||'';
-  const course=(document.getElementById('grd-course')||{}).value||'';
   const subject=(document.getElementById('grd-subject')||{}).value||'';
   const statusFilter=(document.getElementById('grd-status')||{}).value||'';
   const filtered=state.grades.filter(g=>{
@@ -580,6 +574,7 @@ function renderGrades(q){
     return inQ&&inS&&inSt;
   });
   const tbody=document.getElementById('grades-tbody');
+  if(!tbody){return;}
   if(!filtered.length){tbody.innerHTML=emptyRow(6);return;}
   tbody.innerHTML=filtered.map(g=>{
     const nota=typeof g.nota==='number'?g.nota:0;
@@ -601,7 +596,9 @@ function openGradeModal(id){
   document.getElementById('g-subject').innerHTML=subjectOptions('');
   document.getElementById('g-id').value=id||'';
   if(id){
-    const g=state.grades.find(x=>x.id===id);if(!g)return;
+    // FIX: String() para comparar IDs correctamente
+    const g=state.grades.find(x=>String(x.id)===String(id));
+    if(!g)return;
     document.getElementById('modal-grade-title').textContent='Editar Nota';
     document.getElementById('g-course').value=String(g.courseId||'');
     document.getElementById('g-student').value=String(g.studentId||'');
@@ -617,18 +614,18 @@ function openGradeModal(id){
   openModal('modal-grade');
 }
 function editGrade(id){openGradeModal(id);}
-// FIX: eliminar nota ahora llama a la API
 async function deleteGrade(id){
-  const g=state.grades.find(x=>x.id===id);
+  // FIX: String() para comparar IDs correctamente
+  const g=state.grades.find(x=>String(x.id)===String(id));
+  if(!g){toast('Nota no encontrada','error');return;}
   confirmDelete(`¿Eliminar la nota de "${g.student}"?`, async ()=>{
     try {
       await apiFetch('grades','delete',{id});
-      state.grades=state.grades.filter(x=>x.id!==id);
+      state.grades=state.grades.filter(x=>String(x.id)!==String(id));
       renderGrades();toast('Nota eliminada','error');
     } catch(e){ toast(`Error: ${e.message}`,'error'); }
   });
 }
-// FIX: guardar nota ahora llama a la API
 async function saveGrade(){
   const studentId=document.getElementById('g-student').value;
   const subjectId=document.getElementById('g-subject').value;
@@ -646,16 +643,14 @@ async function saveGrade(){
     toast(id?'Nota actualizada':'Nota registrada','success');
   } catch(e){ toast(`Error: ${e.message}`,'error'); }
 }
- 
+
 // ======= ASISTENCIA =======
-// Renderiza la lista de asistencia para la fecha y curso seleccionados.
 function renderAttendance(){
   const selectedDate=(document.getElementById('att-date')||{}).value||new Date().toISOString().slice(0,10);
   const selectedCourse=(document.getElementById('att-course')||{}).value||'';
   const rows=state.attendance.filter(rec=>
     rec.date===selectedDate&&(!selectedCourse||rec.course===selectedCourse)
   );
-  // También muestra todos los estudiantes del curso seleccionado, aun cuando no haya registro previo.
   const studentsForCourse=state.students.filter(s=>!selectedCourse||s.course===selectedCourse);
   const attList=document.getElementById('att-list');
   if(!attList) return;
@@ -683,18 +678,18 @@ function setAtt(studentId,studentName,st,row){
   const map={Presente:'present',Ausente:'absent',Tardanza:'late'};
   row.querySelectorAll('.att-btn').forEach(b=>{if(b.textContent.trim()===st)b.classList.add(map[st]||'');});
   updateAttCounts();
-  // Persist asynchronously
   apiFetch('attendance','save',{studentId,date:selectedDate,status:st}).catch(()=>{});
 }
 function updateAttCounts(){
   const selectedDate=(document.getElementById('att-date')||{}).value||new Date().toISOString().slice(0,10);
   const rows=state.attendance.filter(r=>r.date===selectedDate);
-  document.getElementById('cnt-p').textContent=rows.filter(v=>v.status==='Presente').length;
-  document.getElementById('cnt-a').textContent=rows.filter(v=>v.status==='Ausente').length;
-  document.getElementById('cnt-l').textContent=rows.filter(v=>v.status==='Tardanza').length;
+  const cp=document.getElementById('cnt-p');const ca=document.getElementById('cnt-a');const cl=document.getElementById('cnt-l');
+  if(cp) cp.textContent=rows.filter(v=>v.status==='Presente').length;
+  if(ca) ca.textContent=rows.filter(v=>v.status==='Ausente').length;
+  if(cl) cl.textContent=rows.filter(v=>v.status==='Tardanza').length;
 }
 function saveAttendance(){toast('Asistencia guardada','success');}
- 
+
 // ======= PAGOS =======
 function renderPayments(q){
   if(q===undefined)q=(document.querySelector('#page-payments .search-box input')||{}).value||'';
@@ -703,10 +698,11 @@ function renderPayments(q){
     const inQ=!q||(p.student+p.concept).toLowerCase().includes(q.toLowerCase());
     return inQ&&(!status||p.status===status);
   });
+  const nbp=document.getElementById('nb-pending');
   const pending=state.payments.filter(p=>p.status==='Pendiente'||p.status==='Vencido').length;
-  document.getElementById('nb-pending').textContent=pending;
-  document.getElementById('nb-pending').style.display=pending===0?'none':'';
+  if(nbp){nbp.textContent=pending;nbp.style.display=pending===0?'none':'';}
   const tbody=document.getElementById('payments-tbody');
+  if(!tbody) return;
   if(!filtered.length){tbody.innerHTML=emptyRow(7);return;}
   tbody.innerHTML=filtered.map(p=>`<tr>
     <td style="font-size:11px;color:var(--gray-400)">${p.id}</td>
@@ -721,9 +717,9 @@ function renderPayments(q){
     </div></td>
   </tr>`).join('');
 }
-// FIX: marcar pago como pagado persiste en la API
 async function markPaid(id){
-  const p=state.payments.find(x=>x.id===id);
+  // FIX: String() para comparar IDs correctamente
+  const p=state.payments.find(x=>String(x.id)===String(id));
   if(!p) return;
   p.status='Pagado';p.date=new Date().toLocaleDateString('es-BO');
   try {
@@ -735,7 +731,9 @@ function openPaymentModal(id){
   document.getElementById('p-student').innerHTML=studentOptions('');
   document.getElementById('p-id').value=id||'';
   if(id){
-    const p=state.payments.find(x=>x.id===id);if(!p)return;
+    // FIX: String() para comparar IDs correctamente
+    const p=state.payments.find(x=>String(x.id)===String(id));
+    if(!p)return;
     document.getElementById('modal-payment-title').textContent='Editar Pago';
     document.getElementById('p-student').value=String(p.studentId||'');
     document.getElementById('p-amount').value=p.amount;
@@ -754,18 +752,18 @@ function openPaymentModal(id){
   openModal('modal-payment');
 }
 function editPayment(id){openPaymentModal(id);}
-// FIX: Borrar pago ahora llama a la API
 async function deletePayment(id){
-  const p=state.payments.find(x=>x.id===id);
+  // FIX: String() para comparar IDs correctamente
+  const p=state.payments.find(x=>String(x.id)===String(id));
+  if(!p){toast('Pago no encontrado','error');return;}
   confirmDelete(`¿Eliminar el pago de "${p.student}"?`, async ()=>{
     try {
       await apiFetch('payments','delete',{id});
-      state.payments=state.payments.filter(x=>x.id!==id);
+      state.payments=state.payments.filter(x=>String(x.id)!==String(id));
       renderPayments();updateDashboard();toast('Pago eliminado','error');
     } catch(e){ toast(`Error: ${e.message}`,'error'); }
   });
 }
-// FIX: GUARDADO DE PAGO ahora llama a la API
 async function savePayment(){
   const studentId=document.getElementById('p-student').value;
   const amount=parseFloat(document.getElementById('p-amount').value);
@@ -789,7 +787,7 @@ async function savePayment(){
     toast(id?'Pago actualizado':'Pago registrado','success');
   } catch(e){ toast(`Error: ${e.message}`,'error'); }
 }
- 
+
 // ======= INSCRIPCIONES =======
 function renderInscriptions(q){
   if(q===undefined)q=(document.querySelector('#page-inscriptions .search-box input')||{}).value||'';
@@ -799,6 +797,7 @@ function renderInscriptions(q){
     return inQ&&(!status||i.status===status);
   });
   const tbody=document.getElementById('inscriptions-tbody');
+  if(!tbody) return;
   if(!filtered.length){tbody.innerHTML=emptyRow(7);return;}
   tbody.innerHTML=filtered.map(i=>`<tr>
     <td style="font-size:11px;color:var(--gray-400)">${i.id}</td>
@@ -815,7 +814,9 @@ function openInscriptionModal(id){
   if(studentEl) studentEl.innerHTML=studentOptions('');
   document.getElementById('i-id').value=id||'';
   if(id){
-    const ins=state.inscriptions.find(x=>x.id===id);if(!ins)return;
+    // FIX: String() para comparar IDs correctamente
+    const ins=state.inscriptions.find(x=>String(x.id)===String(id));
+    if(!ins)return;
     document.getElementById('modal-inscription-title').textContent='Editar Inscripción';
     if(studentEl) studentEl.value=String(ins.studentId||'');
     if(courseEl) courseEl.value=String(ins.courseId||'');
@@ -831,9 +832,11 @@ function openInscriptionModal(id){
 }
 function editInscription(id){openInscriptionModal(id);}
 function deleteInscription(id){
-  const ins=state.inscriptions.find(x=>x.id===id);
+  // FIX: String() para comparar IDs correctamente
+  const ins=state.inscriptions.find(x=>String(x.id)===String(id));
+  if(!ins){toast('Inscripción no encontrada','error');return;}
   confirmDelete(`¿Eliminar la inscripción de "${ins.student}"?`,()=>{
-    state.inscriptions=state.inscriptions.filter(x=>x.id!==id);
+    state.inscriptions=state.inscriptions.filter(x=>String(x.id)!==String(id));
     renderInscriptions();updateDashboard();toast('Inscripción eliminada','error');
   });
 }
@@ -847,17 +850,15 @@ function saveInscription(){
   const status=document.getElementById('i-status').value;
   const obj={
     id:id||genId('INS'),
-    student,
-    course,
-    level:'',
+    student,course,level:'',
     date:dateVal?new Date(dateVal).toLocaleDateString('es-BO'):new Date().toLocaleDateString('es-BO'),
     status
   };
-  if(id){const i=state.inscriptions.findIndex(x=>x.id===id);state.inscriptions[i]=obj;toast('Inscripción actualizada','success');}
+  if(id){const i=state.inscriptions.findIndex(x=>String(x.id)===String(id));state.inscriptions[i]=obj;toast('Inscripción actualizada','success');}
   else{state.inscriptions.push(obj);toast('Estudiante inscrito correctamente','success');}
   closeModal('modal-inscription');renderInscriptions();updateDashboard();
 }
- 
+
 // ======= USUARIOS =======
 const roleColors={Administrador:'badge-purple',Director:'badge-blue',Secretaria:'badge-success',Docente:'badge-blue',Tesorero:'badge-warning'};
 function renderUsers(q){
@@ -888,7 +889,9 @@ function renderUsers(q){
 function openUserModal(id){
   document.getElementById('u-id').value=id||'';
   if(id){
-    const u=state.users.find(x=>x.id===id);if(!u)return;
+    // FIX: String() para comparar IDs correctamente
+    const u=state.users.find(x=>String(x.id)===String(id));
+    if(!u)return;
     document.getElementById('modal-user-title').textContent='Editar Usuario';
     document.getElementById('u-name').value=u.name;
     document.getElementById('u-email').value=u.email;
@@ -906,18 +909,18 @@ function openUserModal(id){
   openModal('modal-user');
 }
 function editUser(id){openUserModal(id);}
-// FIX: eliminar usuario ahora llama a la API
 async function deleteUser(id){
-  const u=state.users.find(x=>x.id===id);
+  // FIX: String() para comparar IDs correctamente
+  const u=state.users.find(x=>String(x.id)===String(id));
+  if(!u){toast('Usuario no encontrado','error');return;}
   confirmDelete(`¿Eliminar al usuario "${u.name}"?`, async ()=>{
     try {
       await apiFetch('users','delete',{id});
-      state.users=state.users.filter(x=>x.id!==id);
+      state.users=state.users.filter(x=>String(x.id)!==String(id));
       renderUsers();updateDashboard();toast('Usuario eliminado','error');
     } catch(e){ toast(`Error: ${e.message}`,'error'); }
   });
 }
-// FIX: guardar usuario ahora llama a la API
 async function saveUser(){
   const name=document.getElementById('u-name').value.trim();
   const email=document.getElementById('u-email').value.trim();
@@ -939,7 +942,7 @@ async function saveUser(){
     toast(id?'Usuario actualizado':'Usuario creado','success');
   } catch(e){ toast(`Error: ${e.message}`,'error'); }
 }
- 
+
 // ======= REPORTES =======
 let currentReport='';
 function showReport(type){
@@ -967,7 +970,7 @@ function applyReportFilter(){
       const p=recs.filter(r=>r.status==='Presente').length;
       const a=recs.filter(r=>r.status==='Ausente').length;
       const l=recs.filter(r=>r.status==='Tardanza').length;
-      const tot=p+a+l||1; const pct=Math.round(p/tot*100);
+      const tot=p+a+l||1;const pct=Math.round(p/tot*100);
       return `<tr><td>${s.name}</td><td>${p}</td><td>${a}</td><td>${l}</td><td><span class="badge ${pct>=90?'badge-success':pct>=75?'badge-warning':'badge-danger'}">${pct}%</span></td></tr>`;
     }).join('');
   } else {
@@ -977,14 +980,13 @@ function applyReportFilter(){
   document.getElementById('rep-thead').innerHTML=thead;
   document.getElementById('rep-tbody').innerHTML=tbody||emptyRow(6);
 }
- 
+
 function sendNotification(){toast('Función de notificaciones no implementada','warning');}
 function updateNotifyMsg(){}
 function sendRecovery(){toast('Recuperar contraseña no implementado','warning');}
 function doLogout(){window.location.href='../index.html';}
 
 // ======= INIT =======
-// Inicializa la app: reloj, carga de datos y renderizado de todas las secciones.
 async function initApp(){
   updateClock();setInterval(updateClock,1000);
   await loadInitialData();
@@ -993,6 +995,6 @@ async function initApp(){
   renderScheduleList();
   updateDashboard();
 }
- 
+
 if (typeof refreshCaptcha === 'function') refreshCaptcha();
 initApp();
