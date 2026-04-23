@@ -44,6 +44,8 @@ CREATE TABLE Estudiantes (
   Id_estudiante INT         NOT NULL AUTO_INCREMENT,
   ID_usuario    INT         NOT NULL,
   Id_curso      INT         NOT NULL,
+  CI          VARCHAR(20) NOT NULL,
+  fecha_nac   DATE        NOT NULL,
   email      VARCHAR(150) NOT NULL,
   contraseña VARCHAR(255) NOT NULL,
   rol        VARCHAR(50)  NOT NULL,

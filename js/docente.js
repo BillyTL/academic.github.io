@@ -1,5 +1,3 @@
-// Archivo JS del panel docente.
-// Aquí se definen los datos, las llamadas al servidor, la navegación y el renderizado del panel.
 const API_URL = window.location.pathname.includes('/views/') ? '../backend/API/api.php' : 'backend/API/api.php';
 
 const state = {
