@@ -290,7 +290,7 @@
     <div class="modal-body">
       <input type="hidden" id="sch-id">
       <div class="form-row">
-        <div class="form-group"><label>Curso*</label><select id="sch-course"><option>1° Primaria A</option><option>2° Primaria B</option><option>3° Secundaria A</option><option>4° Bachillerato A</option><option>5° Bachillerato A</option></select></div>
+        <div class="form-group"><label>Curso*</label><select id="sch-course-sel"></select></div>
         <div class="form-group"><label>Día*</label><select id="sch-day"><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option></select></div>
       </div>
       <div class="form-row">
@@ -402,7 +402,7 @@
     <div class="modal-header"><h3 id="modal-student-title">Nuevo Estudiante</h3><button class="modal-close" onclick="closeModal('modal-student')">×</button></div>
     <div class="modal-body">
       <input type="hidden" id="s-id">
-      <div class="form-group"><label>Usuario*</label><select id="s-user"></select><span class="err-msg">Requerido</span></div>
+      <div class="form-group"><label>Usuario*</label><input type="text" id="s-user" placeholder="Nombre del estudiante"><span class="err-msg">Requerido</span></div>
       <div class="form-row">
         <div class="form-group"><label>Curso*</label><select id="s-course"></select></div>
         <div class="form-group"><label>Turno*</label><select id="s-shift"><option>Mañana</option><option>Tarde</option><option>Noche</option></select></div>

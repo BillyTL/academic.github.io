@@ -495,7 +495,7 @@ th {
   border-bottom: 1px solid rgba(255,255,255,.1);
   white-space: nowrap;
 }
-th:last-child { text-align: right; } /* Columna Acciones */
+th:last-child { text-align: center; }/* Columna Acciones */
 
 /* Filas alternas */
 tbody tr:nth-child(even) td { background: var(--surface); }
@@ -516,7 +516,7 @@ tr:last-child td { border-bottom: none; }
 tbody tr:hover td { background: #d4f0e6 !important; }
 
 /* Columna acciones */
-td.actions { text-align: right; }
+td.actions { text-align: center; }
 .action-icon {
   display: inline-flex; align-items: center; justify-content: center;
   width: 30px; height: 30px;
