@@ -1,7 +1,5 @@
 // URL base del backend PHP. Todas las llamadas AJAX usan este archivo.
-const API_URL = window.location.pathname.includes('/views/')
-  ? '../backend/API/api.php'
-  : 'backend/API/api.php';
+const API_URL = window.location.pathname.includes('/views/')? '../backend/API/api.php': 'backend/API/api.php';
 
 // Estado global de la aplicación. Aquí se guarda la información cargada desde la API.
 const state = {
@@ -228,105 +226,6 @@ async function saveSchedule() {
     toast(id ? 'Clase actualizada' : 'Clase registrada', 'success');
   } catch (e) { toast(`Error: ${e.message}`, 'error'); }
 }
-
-// ── Notas ──────────────────────────────────────────────────
-async function deleteGrade(id) {
-  const g = state.grades.find(x => String(x.id) === String(id));
-  if (!g) { toast('Nota no encontrada', 'error'); return; }
-  confirmDelete(`¿Eliminar la nota de "${g.student}"?`, async () => {
-    try {
-      await apiFetch('grades', 'delete', { id });
-      state.grades = state.grades.filter(x => String(x.id) !== String(id));
-      renderGrades(); toast('Nota eliminada', 'error');
-    } catch (e) { toast(`Error: ${e.message}`, 'error'); }
-  });
-}
-
-async function saveGrade() {
-  const studentId = document.getElementById('g-student').value;
-  const subjectId = document.getElementById('g-subject').value;
-  const nota      = parseInt(document.getElementById('g-grade').value) || 0;
-  if (!studentId) { toast('Seleccione un estudiante', 'error'); return; }
-  if (!subjectId) { toast('Seleccione una materia',   'error'); return; }
-  const id = document.getElementById('g-id').value;
-  try {
-    const payload = { studentId, subjectId, nota, periodo: '1er Trimestre' };
-    if (id) payload.id = id;
-    await apiFetch('grades', 'save', payload);
-    const updated = await apiFetch('grades');
-    if (Array.isArray(updated)) state.grades = updated;
-    closeModal('modal-grade'); renderGrades();
-    toast(id ? 'Nota actualizada' : 'Nota registrada', 'success');
-  } catch (e) { toast(`Error: ${e.message}`, 'error'); }
-}
-
-// ── Asistencia ─────────────────────────────────────────────
-// setAtt toca la API en segundo plano; también actualiza el estado local y el DOM.
-function setAtt(studentId, studentName, st, row) {
-  const selectedDate   = (document.getElementById('att-date')   || {}).value || new Date().toISOString().slice(0, 10);
-  const selectedCourse = (document.getElementById('att-course') || {}).value || '';
-  const existing = state.attendance.find(r => r.student === studentName && r.date === selectedDate);
-  if (existing) existing.status = st;
-  else state.attendance.push({ student: studentName, course: selectedCourse, date: selectedDate, status: st });
-  row.querySelectorAll('.att-btn').forEach(b => b.classList.remove('present', 'absent', 'late'));
-  const map = { Presente: 'present', Ausente: 'absent', Tardanza: 'late' };
-  row.querySelectorAll('.att-btn').forEach(b => { if (b.textContent.trim() === st) b.classList.add(map[st] || ''); });
-  updateAttCounts();
-  apiFetch('attendance', 'save', { studentId, date: selectedDate, status: st }).catch(() => {});
-}
-
-// ── Pagos ──────────────────────────────────────────────────
-async function markPaid(id) {
-  const p = state.payments.find(x => String(x.id) === String(id));
-  if (!p) return;
-  p.status = 'Pagado';
-  p.date   = new Date().toLocaleDateString('es-BO');
-  try {
-    await apiFetch('payments', 'save', {
-      id: p.id, studentId: p.studentId, concept: p.concept,
-      amount: p.amount, method: p.method,
-      date: new Date().toISOString().split('T')[0], status: 'Pagado'
-    });
-  } catch (e) { console.warn('markPaid API error:', e); }
-  renderPayments(); updateDashboard(); toast('Pago confirmado', 'success');
-}
-
-async function deletePayment(id) {
-  const p = state.payments.find(x => String(x.id) === String(id));
-  if (!p) { toast('Pago no encontrado', 'error'); return; }
-  confirmDelete(`¿Eliminar el pago de "${p.student}"?`, async () => {
-    try {
-      await apiFetch('payments', 'delete', { id });
-      state.payments = state.payments.filter(x => String(x.id) !== String(id));
-      renderPayments(); updateDashboard(); toast('Pago eliminado', 'error');
-    } catch (e) { toast(`Error: ${e.message}`, 'error'); }
-  });
-}
-
-async function savePayment() {
-  const studentId = document.getElementById('p-student').value;
-  const amount    = parseFloat(document.getElementById('p-amount').value);
-  if (!studentId) { toast('Seleccione un estudiante', 'error'); return; }
-  if (!amount)    { toast('Ingrese un monto válido',   'error'); return; }
-  const id      = document.getElementById('p-id').value;
-  const dateVal = document.getElementById('p-date').value;
-  const payload = {
-    studentId, amount,
-    method:  document.getElementById('p-method').value,
-    date:    dateVal || new Date().toISOString().split('T')[0],
-    concept: document.getElementById('p-concept').value.trim() || 'Pago general',
-    status:  document.getElementById('p-status').value
-  };
-  if (id) payload.id = id;
-  try {
-    await apiFetch('payments', 'save', payload);
-    const updated = await apiFetch('payments');
-    if (Array.isArray(updated)) state.payments = updated;
-    closeModal('modal-payment'); renderPayments(); updateDashboard();
-    toast(id ? 'Pago actualizado' : 'Pago registrado', 'success');
-  } catch (e) { toast(`Error: ${e.message}`, 'error'); }
-}
-
 // ── Usuarios ───────────────────────────────────────────────
 async function deleteUser(id) {
   const u = state.users.find(x => String(x.id) === String(id));

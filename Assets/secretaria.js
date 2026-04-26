@@ -186,9 +186,10 @@ function populateFormSelects() {
   if (subTeacher) subTeacher.innerHTML = teacherOptions();
 }
 
-function openStudentModal() { populateFormSelects(); openModal('modal-student'); }
+// Funciones de abrir formularios
 function openTeacherModal() { openModal('modal-teacher'); }
 function openSubjectModal() { openModal('modal-subject'); }
+function openPaymentModal() { populateFormSelects(); openModal('modal-payment'); }
 function openCourseModal(id) {
   const modalTitle = document.getElementById('modal-course-title');
   const courseId = document.getElementById('c-id');
@@ -436,29 +437,3 @@ function initSecretaria() {
     goTo('dashboard');
   });
 }
-async function saveCourse() {
-  const id = document.getElementById('c-id').value;
-  const level = document.getElementById('c-level').value.trim();
-  const parallel = document.getElementById('c-parallel').value.trim();
-  const shift = document.getElementById('c-shift').value.trim();
-  const parallelEl = document.getElementById('c-parallel').parentElement;
-
-  parallelEl.classList.toggle('has-error', !parallel);
-  if (!level || !parallel || !shift) { toast('Complete todos los campos del curso.', 'error'); return; }
-
-  try {
-    const payload = { level, parallel, shift };
-    if (id) payload.id = id;
-    const result = await apiFetch('courses', 'save', payload);
-    const course = result.course || result;
-    if (!course || !course.id) { toast('No se pudo guardar el curso.', 'error'); return; }
-    const updatedCourses = await apiFetch('courses');
-    if (Array.isArray(updatedCourses)) state.courses = updatedCourses;
-    closeModal('modal-course');
-    renderCourses();
-    renderDashboard();
-    populateFormSelects();
-    toast(id ? 'Curso actualizado' : 'Curso registrado', 'success');
-  } catch (error) {
-    toast(`Error guardando curso: ${error.message}`, 'error');
-  }

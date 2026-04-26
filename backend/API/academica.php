@@ -1,6 +1,5 @@
 <?php
 // ─── MATERIAS ───────────────────────────────────────────────────────────────
-
 // handleSubjects: procesa solicitudes para el recurso "subjects".
 // - action=save: crea o actualiza una materia.
 // - action=delete: elimina una materia.
@@ -71,9 +70,7 @@ function handleSubjects($pdo) {
     echo json_encode($pdo->query('SELECT Id_Materia AS id, Nombre AS name FROM Materias')->fetchAll());
   }
 }
-
 // ─── AULAS ────────────────────────────────────────────────────────────────
-
 // handleCourses: procesa solicitudes para el recurso "courses".
 // - action=save: crea o actualiza un curso.
 // - action=delete: elimina un curso.
@@ -130,7 +127,6 @@ function handleCourses($pdo) {
     }
     return;
   }
-
   $rows = [];
   foreach ($pdo->query("SELECT ID_Curso AS id, Nivel, Paralelo, Turno FROM Curso")->fetchAll() as $row) {
     $row['name'] = trim($row['Nivel'] . ' ' . $row['Paralelo']);
@@ -140,9 +136,7 @@ function handleCourses($pdo) {
   }
   echo json_encode($rows);
 }
-
 // ─── HORARIO ───────────────────────────────────────────────────────────────
-
 // handleSchedule: procesa solicitudes para el recurso "schedule".
 // - action=save: crea o actualiza un horario.
 // - action=delete: elimina un horario.
@@ -201,9 +195,7 @@ function handleSchedule($pdo) {
   $sql = "SELECT h.Id_Horario AS id, CONCAT(c.Nivel,' ',c.Paralelo) AS course, h.Dia AS day, h.HoraInicio AS start, h.HoraFin AS end, m.Nombre AS subject, u.nombre AS teacher, h.Aula AS room FROM Horarios h JOIN Curso c ON h.id_curso=c.ID_Curso JOIN Materias m ON h.Id_Materia=m.Id_Materia JOIN Docente d ON h.ID_docente=d.ID_docente JOIN Usuario u ON d.ID_usuario=u.ID";
   echo json_encode($pdo->query($sql)->fetchAll());
 }
-
 // ─── INSCRIPCIONES ───────────────────────────────────────────────────────────
-
 // handleInscriptions: procesa solicitudes para el recurso "inscriptions".
 // - action=save: crea una inscripción de estudiante y registra al estudiante en el sistema.
 // - default: devuelve la lista de inscripciones.
@@ -271,7 +263,6 @@ function handleInscriptions($pdo) {
   $sql = "SELECT i.ID_inscripcion AS id, u.nombre AS student, CONCAT(c.Nivel,' ',c.Paralelo) AS course, c.Nivel AS level, i.Fecha AS date, i.Estado AS status FROM Inscripcion i JOIN Estudiantes e ON i.ID_Estudiante=e.Id_estudiante JOIN Usuario u ON e.ID_usuario=u.ID JOIN Curso c ON i.Id_curso=c.ID_Curso";
   echo json_encode($pdo->query($sql)->fetchAll());
 }
-
 // ─── ASISTENCIA ─────────────────────────────────────────────────────────────
 // Note: assumes an Asistencia table with columns:
 //   ID_Asistencia (PK), ID_Estudiante (FK), Fecha, Estado
@@ -316,7 +307,6 @@ function handleAttendance($pdo) {
     echo json_encode([]);
   }
 }
-
 // ─── CALIFICACIONES ─────────────────────────────────────────────────────────────────
 // Note: assumes a Calificaciones table with columns:
 //   Id_Calificacion (PK), Id_Estudiante (FK), Id_Materia (FK), Nota, Periodo
