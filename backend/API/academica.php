@@ -196,9 +196,6 @@ function handleSchedule($pdo) {
   echo json_encode($pdo->query($sql)->fetchAll());
 }
 // ─── INSCRIPCIONES ───────────────────────────────────────────────────────────
-// handleInscriptions: procesa solicitudes para el recurso "inscriptions".
-// - action=save: crea una inscripción de estudiante y registra al estudiante en el sistema.
-// - default: devuelve la lista de inscripciones.
 function handleInscriptions($pdo) {
   global $action;
 
@@ -212,6 +209,8 @@ function handleInscriptions($pdo) {
     $courseId = intval($body['courseId'] ?? 0);
     $date     = trim($body['date'] ?? '');
     $status   = trim($body['status'] ?? 'Activa');
+    $ci       = trim($body['ci'] ?? '');
+    $celular  = trim($body['celular'] ?? '');
 
     if (!$name || !$email || !$password || !$courseId || !$date) {
       http_response_code(400); echo json_encode(['error' => 'Faltan campos obligatorios']); return;
@@ -220,34 +219,32 @@ function handleInscriptions($pdo) {
     try {
       $pdo->beginTransaction();
 
-      // FIX: hash the password before storage
       $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-      $pdo->prepare('INSERT INTO Usuario (nombre, email, rol, contraseña) VALUES (:name,:email,:role,:password)')
-          ->execute([':name'=>$name,':email'=>$email,':role'=>'Estudiante',':password'=>$hashedPassword]);
+      $pdo->prepare('INSERT INTO usuario (nombre, email, rol, contraseña, ci, celular) VALUES (:name,:email,:role,:password,:ci,:celular)')
+          ->execute([':name'=>$name,':email'=>$email,':role'=>'Estudiante',':password'=>$hashedPassword,':ci'=>$ci,':celular'=>$celular]);
       $userId = (int)$pdo->lastInsertId();
 
-      $courseStmt = $pdo->prepare('SELECT Turno FROM Curso WHERE ID_Curso = :courseId');
+      $courseStmt = $pdo->prepare('SELECT Turno FROM curso WHERE ID_Curso = :courseId');
       $courseStmt->execute([':courseId' => $courseId]);
       $courseData = $courseStmt->fetch();
       if (!$courseData) { $pdo->rollBack(); http_response_code(400); echo json_encode(['error' => 'Curso no válido']); return; }
 
-      // FIX: do NOT store the password again in Estudiantes — only store hashed in Usuario
-      $pdo->prepare('INSERT INTO Estudiantes (ID_usuario, Id_curso, email, rol, Turno) VALUES (:uid,:courseId,:email,:role,:turno)')
+      $pdo->prepare('INSERT INTO estudiantes (ID_usuario, Id_curso, email, rol, Turno) VALUES (:uid,:courseId,:email,:role,:turno)')
           ->execute([':uid'=>$userId,':courseId'=>$courseId,':email'=>$email,':role'=>'Estudiante',':turno'=>$courseData['Turno']]);
       $studentId = (int)$pdo->lastInsertId();
 
-      $pdo->prepare('INSERT INTO Inscripcion (ID_Estudiante, Id_curso, Fecha, Estado) VALUES (:sid,:courseId,:date,:status)')
+      $pdo->prepare('INSERT INTO inscripcion (ID_Estudiante, Id_curso, Fecha, Estado) VALUES (:sid,:courseId,:date,:status)')
           ->execute([':sid'=>$studentId,':courseId'=>$courseId,':date'=>$date,':status'=>$status]);
       $inscriptionId = (int)$pdo->lastInsertId();
 
       $pdo->commit();
 
-      $fetch = $pdo->prepare("SELECT e.Id_estudiante AS id, u.nombre AS name, u.email, u.rol AS role, c.ID_Curso AS courseId, CONCAT(c.Nivel,' ',c.Paralelo) AS course, c.Turno AS turno FROM Estudiantes e JOIN Usuario u ON e.ID_usuario=u.ID JOIN Curso c ON e.Id_curso=c.ID_Curso WHERE e.Id_estudiante=:id");
+      $fetch = $pdo->prepare("SELECT e.Id_estudiante AS id, u.nombre AS name, u.email, u.ci, u.celular, u.rol AS role, c.ID_Curso AS courseId, CONCAT(c.Nivel,' ',c.Paralelo) AS course, c.Turno AS turno FROM estudiantes e JOIN usuario u ON e.ID_usuario=u.ID JOIN curso c ON e.Id_curso=c.ID_Curso WHERE e.Id_estudiante=:id");
       $fetch->execute([':id' => $studentId]);
       $student = $fetch->fetch();
 
-      $fetchI = $pdo->prepare("SELECT i.ID_inscripcion AS id, u.nombre AS student, CONCAT(c.Nivel,' ',c.Paralelo) AS course, c.Nivel AS level, i.Fecha AS date, i.Estado AS status FROM Inscripcion i JOIN Estudiantes e ON i.ID_Estudiante=e.Id_estudiante JOIN Usuario u ON e.ID_usuario=u.ID JOIN Curso c ON i.Id_curso=c.ID_Curso WHERE i.ID_inscripcion=:id");
+      $fetchI = $pdo->prepare("SELECT i.ID_inscripcion AS id, u.nombre AS student, CONCAT(c.Nivel,' ',c.Paralelo) AS course, c.Nivel AS level, i.Fecha AS date, i.Estado AS status FROM inscripcion i JOIN estudiantes e ON i.ID_Estudiante=e.Id_estudiante JOIN usuario u ON e.ID_usuario=u.ID JOIN curso c ON i.Id_curso=c.ID_Curso WHERE i.ID_inscripcion=:id");
       $fetchI->execute([':id' => $inscriptionId]);
       $inscription = $fetchI->fetch();
 
@@ -260,7 +257,7 @@ function handleInscriptions($pdo) {
     return;
   }
 
-  $sql = "SELECT i.ID_inscripcion AS id, u.nombre AS student, CONCAT(c.Nivel,' ',c.Paralelo) AS course, c.Nivel AS level, i.Fecha AS date, i.Estado AS status FROM Inscripcion i JOIN Estudiantes e ON i.ID_Estudiante=e.Id_estudiante JOIN Usuario u ON e.ID_usuario=u.ID JOIN Curso c ON i.Id_curso=c.ID_Curso";
+  $sql = "SELECT i.ID_inscripcion AS id, u.nombre AS student, CONCAT(c.Nivel,' ',c.Paralelo) AS course, c.Nivel AS level, i.Fecha AS date, i.Estado AS status FROM inscripcion i JOIN estudiantes e ON i.ID_Estudiante=e.Id_estudiante JOIN usuario u ON e.ID_usuario=u.ID JOIN curso c ON i.Id_curso=c.ID_Curso";
   echo json_encode($pdo->query($sql)->fetchAll());
 }
 // ─── ASISTENCIA ─────────────────────────────────────────────────────────────

@@ -167,14 +167,13 @@ function renderStudents(q){
     return inQ && inC && inS;
   });
   const tbody = document.getElementById('students-tbody');
-  if(!filtered.length){ tbody.innerHTML = emptyRow(8); return; }
+  if(!filtered.length){ tbody.innerHTML = emptyRow(7); return; }
   tbody.innerHTML = filtered.map(s=>`<tr>
     <td style="font-size:11px;color:var(--gray-400)">${s.id}</td>
     <td><div style="font-weight:500">${s.name}</div></td>
     <td>${s.ci||'—'}</td>
-    <td>${calcAge(s.birth)}</td>
+    <td>${s.celular||'—'}</td>
     <td><span class="badge badge-blue">${s.course||'—'}</span></td>
-    <td>${s.phone||'—'}</td>
     <td>${badgeStatus(s.status||'Activo')}</td>
     <td>${actionBtns(`editStudent('${s.id}')`)}</td>
   </tr>`).join('');

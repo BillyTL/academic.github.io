@@ -69,6 +69,7 @@ async function saveInscription() {
   const password = document.getElementById('i-pass').value.trim();
   const courseId = document.getElementById('i-course').value;
   const date     = document.getElementById('i-date').value;
+  const celular  = document.getElementById('i-celular')?.value.trim() || '';
   const status   = document.getElementById('i-status').value;
 
   // Valida cada campo y marca visualmente los que esten vacios o invalidos.
@@ -84,7 +85,7 @@ async function saveInscription() {
   }
 
   try {
-    const payload = { name, email, ci, password, courseId, date, status };
+    const payload = { name, email, ci, password, courseId, date, status, celular };
     const result  = await apiFetch('inscriptions', 'save', payload);
 
     // El backend debe devolver el estudiante y la inscripcion creados.
