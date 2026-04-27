@@ -24,7 +24,7 @@
           </svg>
         </div>
         <div>
-          <h2>EduCore</h2>
+          <h2 style="color: aliceblue;">EduCore</h2>
           <p>Gestión Académica</p>
         </div>
         <button class="sidebar-close" onclick="closeSidebar()">
@@ -129,6 +129,15 @@
 function showPage(id){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+}
+// ======= SIDEBAR =======
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').classList.add('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
 }
 </script>
 

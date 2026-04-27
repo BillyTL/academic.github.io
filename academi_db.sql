@@ -28,16 +28,6 @@ CREATE TABLE Curso (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
--- TABLA: Materias
--- ------------------------------------------------------------
-CREATE TABLE Materias (
-  Id_Materia INT          NOT NULL AUTO_INCREMENT,
-  Nombre     VARCHAR(100) NOT NULL,
-  ID_docente INT          NULL,
-  PRIMARY KEY (Id_Materia)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- ------------------------------------------------------------
 -- TABLA: Estudiantes
 -- ------------------------------------------------------------
 CREATE TABLE Estudiantes (
@@ -57,18 +47,43 @@ CREATE TABLE Estudiantes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
+-- TABLA: Materias
+-- ------------------------------------------------------------
+CREATE TABLE Materias (
+  Id_Materia INT          NOT NULL AUTO_INCREMENT,
+  Nombre     VARCHAR(100) NOT NULL,
+  PRIMARY KEY (Id_Materia)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE Docente_Materia (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ID_docente INT,
+    Id_Materia INT,
+    FOREIGN KEY (ID_docente) REFERENCES Docente(ID_docente)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (Id_Materia) REFERENCES Materias(Id_Materia)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- ------------------------------------------------------------
 -- TABLA: Docente
 -- ------------------------------------------------------------
 CREATE TABLE Docente (
   ID_docente   INT          NOT NULL AUTO_INCREMENT,
   ID_usuario   INT          NOT NULL,
   Especialidad VARCHAR(100) NOT NULL,
-  email      VARCHAR(150) NOT NULL,
-  contraseña VARCHAR(255) NOT NULL,
+  email        VARCHAR(150) NOT NULL,
+  contraseña   VARCHAR(255) NOT NULL,
   Turno        VARCHAR(20)  NOT NULL,
-  rol        VARCHAR(50)  NOT NULL,
+  rol          VARCHAR(50)  NOT NULL,
   PRIMARY KEY (ID_docente),
-  CONSTRAINT fk_doc_usuario FOREIGN KEY (ID_usuario) REFERENCES Usuario (ID) ON DELETE RESTRICT ON UPDATE CASCADE
+  CONSTRAINT fk_doc_usuario 
+    FOREIGN KEY (ID_usuario) 
+    REFERENCES Usuario (ID) 
+    ON DELETE RESTRICT 
+    ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE Materias

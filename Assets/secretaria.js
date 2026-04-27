@@ -132,6 +132,26 @@ function renderDashboard() {
     <div class="stat-card purple"><div class="stat-icon purple"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><div class="stat-val">${state.schedules.length}</div><div class="stat-label">Horarios</div></div>
   `;
 }
+function openStudentModal(id) {
+  document.getElementById('s-id').value = id || '';
+  if (id) {
+    const s = state.students.find(x => String(x.id) === String(id));
+    if (!s) return;
+    document.getElementById('modal-student-title').textContent = 'Editar Estudiante';
+    document.getElementById('s-user').value   = s.name;
+    document.getElementById('s-course').value = String(s.courseId || '');
+    document.getElementById('s-shift').value  = s.shift || 'Mañana';
+  } else {
+    document.getElementById('modal-student-title').textContent = 'Nuevo Estudiante';
+    document.getElementById('s-user').value   = '';
+    document.getElementById('s-course').value = '';
+    document.getElementById('s-shift').value  = 'Mañana';
+  }
+  ['s-user', 's-course', 's-shift'].forEach(id =>
+    document.getElementById(id).parentElement.classList.remove('has-error')
+  );
+  openModal('modal-student');
+}
 
 function renderStudents(q) {
   if (q === undefined) q = (document.querySelector('#page-students .search-box input') || {}).value || '';
@@ -270,7 +290,7 @@ function renderCourses(q) {
   });
   const tbody = document.getElementById('courses-tbody');
   if (!tbody) return;
-  if (!filtered.length) { tbody.innerHTML = emptyRow(9); return; }
+  if (!filtered.length) { tbody.innerHTML = emptyRow(4); return; }
   tbody.innerHTML = filtered.map(c => {
     const name = c.name || `${c.Nivel || ''} ${c.Paralelo || ''}`.trim();
     return `
@@ -278,10 +298,7 @@ function renderCourses(q) {
         <td style="font-size:11px;color:var(--gray-400)">${c.id || c.ID_Curso || '—'}</td>
         <td><div style="font-weight:500">${name}</div></td>
         <td>${c.Nivel || c.level || ''}</td>
-        <td>—</td><td>—</td>
-        <td>${c.students || '—'}</td>
         <td>${c.Turno || c.shift || '—'}</td>
-        <td>—</td>
         <td>${actionBtns(`editCourse('${c.id || c.ID_Curso || ''}')`, `deleteCourse('${c.id || c.ID_Curso || ''}')`)}</td>
       </tr>`;
   }).join('');
@@ -300,7 +317,7 @@ function renderScheduleList(q) {
   });
   const tbody = document.getElementById('schedule-tbody');
   if (!tbody) return;
-  if (!filtered.length) { tbody.innerHTML = emptyRow(9); return; }
+  if (!filtered.length) { tbody.innerHTML = emptyRow(7); return; }
   tbody.innerHTML = filtered.map(item => `
     <tr>
       <td style="font-size:11px;color:var(--gray-400)">${item.id || '—'}</td>
@@ -310,7 +327,6 @@ function renderScheduleList(q) {
       <td>${item.end || '—'}</td>
       <td><div style="font-weight:500">${item.subject || '—'}</div></td>
       <td>${item.teacher || '—'}</td>
-      <td>${item.room || '—'}</td>
       <td>${actionBtns(`editSchedule('${item.id || ''}')`, `deleteSchedule('${item.id || ''}')`)}</td>
     </tr>`).join('');
 }
@@ -436,4 +452,127 @@ function initSecretaria() {
     renderUsers();
     goTo('dashboard');
   });
+}
+// ── Inscripciones ──────────────────────────────────────────
+function editInscription(id) { openInscriptionModal(id); }
+
+function openInscriptionModal(id) {
+  // Poblar select de cursos
+  const courseEl = document.getElementById('i-course');
+  if (courseEl) courseEl.innerHTML = courseOptions('');
+
+  document.getElementById('i-id').value = id || '';
+
+  if (id) {
+    const ins = state.inscriptions.find(x => String(x.id) === String(id));
+    if (!ins) return;
+    document.getElementById('modal-inscription-title').textContent = 'Editar Inscripción';
+
+    // Llenar los campos que SÍ existen en el HTML
+    document.getElementById('i-name').value   = ins.student || '';
+    document.getElementById('i-email').value  = ins.email   || '';
+    document.getElementById('i-ci').value     = ins.ci      || '';
+    if (courseEl) courseEl.value = String(ins.courseId || ins.course || '');
+    document.getElementById('i-date').value   = ins.birthDate 
+      ? new Date(ins.birthDate).toISOString().split('T')[0] 
+      : (ins.date ? new Date(ins.date).toISOString().split('T')[0] : '');
+    document.getElementById('i-status').value = ins.status  || 'Activa';
+  } else {
+    document.getElementById('modal-inscription-title').textContent = 'Nueva Inscripción';
+    document.getElementById('i-name').value   = '';
+    document.getElementById('i-email').value  = '';
+    document.getElementById('i-ci').value     = '';
+    document.getElementById('i-date').value   = new Date().toISOString().split('T')[0];
+    document.getElementById('i-status').value = 'Activa';
+  }
+
+  // Limpiar errores visuales
+  ['i-name', 'i-email', 'i-ci', 'i-pass'].forEach(fieldId => {
+    const el = document.getElementById(fieldId);
+    if (el) el.parentElement.classList.remove('has-error');
+  });
+
+  openModal('modal-inscription');
+}
+
+function deleteInscription(id) {
+  const ins = state.inscriptions.find(x => String(x.id) === String(id));
+  if (!ins) { toast('Inscripción no encontrada', 'error'); return; }
+  confirmDelete(`¿Eliminar la inscripción de "${ins.student}"?`, () => {
+    state.inscriptions = state.inscriptions.filter(x => String(x.id) !== String(id));
+    renderInscriptions(); updateDashboard(); toast('Inscripción eliminada', 'error');
+  });
+}
+
+function saveInscription() {
+  const name  = document.getElementById('i-name')?.value.trim()  || '';
+  const email = document.getElementById('i-email')?.value.trim() || '';
+  const ci    = document.getElementById('i-ci')?.value.trim()    || '';
+
+  // Validación
+  let hasError = false;
+  if (!name)  { document.getElementById('i-name')?.parentElement.classList.add('has-error');  hasError = true; }
+  if (!email) { document.getElementById('i-email')?.parentElement.classList.add('has-error'); hasError = true; }
+  if (!ci)    { document.getElementById('i-ci')?.parentElement.classList.add('has-error');    hasError = true; }
+  if (hasError) return;
+
+  // Limpiar errores
+  ['i-name','i-email','i-ci'].forEach(fId => 
+    document.getElementById(fId)?.parentElement.classList.remove('has-error')
+  );
+
+  const id       = document.getElementById('i-id').value;
+  const courseId = document.getElementById('i-course')?.value || '';
+  const dateVal  = document.getElementById('i-date').value;
+  const status   = document.getElementById('i-status').value;
+
+  // Buscar nombre del curso para mostrarlo
+  const courseObj = state.courses.find(c => String(c.id) === String(courseId));
+  const courseName = courseObj
+    ? (courseObj.name || `${courseObj.Nivel || ''} ${courseObj.Paralelo || ''}`.trim())
+    : courseId;
+
+  const obj = {
+    id:        id || genId('INS'),
+    student:   name,
+    email,
+    ci,
+    course:    courseName,
+    courseId,
+    level:     courseObj?.Nivel || courseObj?.level || '',
+    date:      dateVal ? new Date(dateVal).toLocaleDateString('es-BO') : new Date().toLocaleDateString('es-BO'),
+    status
+  };
+
+  if (id) {
+    const idx = state.inscriptions.findIndex(x => String(x.id) === String(id));
+    if (idx !== -1) state.inscriptions[idx] = obj;
+    toast('Inscripción actualizada', 'success');
+  } else {
+    state.inscriptions.push(obj);
+    toast('Estudiante inscrito correctamente', 'success');
+  }
+
+  closeModal('modal-inscription');
+  renderInscriptions();
+  updateDashboard?.();
+}
+
+function renderInscriptions(q) {
+  if (q === undefined) q = (document.querySelector('#page-inscriptions .search-box input') || {}).value || '';
+  const status = (document.getElementById('ins-filter-status') || {}).value || '';
+  const filtered = state.inscriptions.filter(i => {
+    const inQ = !q || (i.student + i.course).toLowerCase().includes(q.toLowerCase());
+    return inQ && (!status || i.status === status);
+  });
+  const tbody = document.getElementById('inscriptions-tbody');
+  if (!tbody) return;
+  if (!filtered.length) { tbody.innerHTML = emptyRow(7); return; }
+  tbody.innerHTML = filtered.map(i => `<tr>
+    <td style="font-size:11px;color:var(--gray-400)">${i.id}</td>
+    <td><div style="font-weight:500">${i.student}</div></td>
+    <td>${i.course}</td><td>${i.level}</td><td>${i.date}</td>
+    <td>${badgeStatus(i.status)}</td>
+    <td>${actionBtns(`editInscription('${i.id}')`, `deleteInscription('${i.id}')`)}</td>
+  </tr>`).join('');
 }

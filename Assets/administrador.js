@@ -222,7 +222,7 @@ function renderTeachers(q){
   tbody.innerHTML = filtered.map(t=>`<tr>
     <td style="font-size:11px;color:var(--gray-400)">${t.id}</td>
     <td><div style="font-weight:500">${t.name}</div></td>
-    <td>${t.specialty}</td><td>${t.subjects||'—'}</td><td>${t.courses||'—'}</td>
+    <td>${t.specialty}</td>
     <td style="font-size:12px">${t.email}</td>
     <td>${badgeStatus(t.status||'Activo')}</td>
     <td>${actionBtns(`editTeacher('${t.id}')`)}</td>
@@ -251,22 +251,28 @@ function openSubjectModal(id){
   openModal('modal-subject');
 }
 
-function renderSubjects(q){
-  if(q===undefined) q = (document.querySelector('#page-subjects .search-box input')||{}).value||'';
+function renderSubjects(q) {
+  if (q === undefined) q = (document.querySelector('#page-subjects .search-box input') || {}).value || '';
   const filtered = state.subjects.filter(s =>
-    !q || ((s.name||'')+(s.teacher||'')).toLowerCase().includes(q.toLowerCase())
+    !q || ((s.name || '') + (s.teacher || '')).toLowerCase().includes(q.toLowerCase())
   );
   const tbody = document.getElementById('subjects-tbody');
-  if(!filtered.length){ tbody.innerHTML = emptyRow(7); return; }
+  if (!tbody) return;
+  if (!filtered.length) { tbody.innerHTML = emptyRow(3); return; }
   tbody.innerHTML = filtered.map((s, index) => {
     const id = s.id || '';
+    const ref = s.teacherId || s.teacher_id || s.ID_Docente || null;
+    let teacherName = '—';
+    if (ref) {
+      const obj = state.teachers.find(t => String(t.id) === String(ref));
+      teacherName = obj ? obj.name : String(ref);
+    } else if (s.teacher) {
+      // La API ya resolvió el JOIN y devuelve el nombre directamente
+      teacherName = s.teacher;
+    }
     return `<tr>
-      <td style="font-size:11px;color:var(--gray-400)">${index+1}</td>
-      <td>${s.name||''}</td>
-      <td>${id||'—'}</td>
-      <td>—</td>
-      <td>—</td>
-      <td>${s.teacher||'—'}</td>
+      <td style="font-size:11px;color:var(--gray-400)">${index + 1}</td>
+      <td><div style="font-weight:500">${s.name || ''}</div></td>
       <td>${actionBtns(`editSubject('${id}')`)}</td>
     </tr>`;
   }).join('');
@@ -306,7 +312,7 @@ function renderCourses(q){
   tbody.innerHTML = filtered.map(c=>`<tr>
     <td style="font-size:11px;color:var(--gray-400)">${c.id}</td>
     <td><div style="font-weight:500">${c.name}</div></td>
-    <td>${c.level}</td><td>${c.room||'—'}</td><td>${c.tutor||'—'}</td>
+    <td>${c.level}</td>
     <td><span class="badge badge-blue">${c.students||0}/${c.cap||'—'}</span></td>
     <td>${c.shift}</td>
     <td>${badgeStatus(c.status||'Activo')}</td>
@@ -365,7 +371,6 @@ function renderScheduleList(q){
     <td>${s.end}</td>
     <td><div style="font-weight:500">${s.subject}</div></td>
     <td>${s.teacher}</td>
-    <td>${s.room||'—'}</td>
     <td>${actionBtns(`editSchedule('${s.id}')`)}</td>
   </tr>`).join('');
 }
@@ -651,7 +656,6 @@ function renderUsers(q){
     </td>
     <td style="font-size:12px">${u.email}</td>
     <td><span class="badge ${roleColors[u.role]||'badge-gray'}">${u.role}</span></td>
-    <td style="font-size:12px;color:var(--gray-400)">${u.lastAccess}</td>
     <td>${badgeStatus(u.status)}</td>
     <td>${actionBtns(`editUser('${u.id}')`)}</td>
   </tr>`).join('');

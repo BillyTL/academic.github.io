@@ -140,7 +140,6 @@ async function deleteSubject(id) {
     } catch (e) { toast(`Error: ${e.message}`, 'error'); }
   });
 }
-
 async function saveSubject() {
   const name      = document.getElementById('sub-name').value.trim();
   const teacherId = document.getElementById('sub-teacher').value;
@@ -153,24 +152,17 @@ async function saveSubject() {
     const payload = { name, teacherId: Number(teacherId) };
     if (id) payload.id = id;
     await apiFetch('subjects', 'save', payload);
-    const updated = await apiFetch('subjects');
-    if (Array.isArray(updated)) state.subjects = updated;
-    closeModal('modal-subject'); renderSubjects();
+    // Recarga subjects Y teachers juntos para garantizar sincronía
+    const [updatedSubjects, updatedTeachers] = await Promise.all([
+      apiFetch('subjects'),
+      apiFetch('teachers')
+    ]);
+    if (Array.isArray(updatedSubjects)) state.subjects = updatedSubjects;
+    if (Array.isArray(updatedTeachers)) state.teachers = updatedTeachers;
+    closeModal('modal-subject');
+    renderSubjects();
     toast(id ? 'Materia actualizada' : 'Materia registrada', 'success');
   } catch (e) { toast(`Error: ${e.message}`, 'error'); }
-}
-
-// ── Cursos ─────────────────────────────────────────────────
-async function deleteCourse(id) {
-  const c = state.courses.find(x => String(x.id) === String(id));
-  if (!c) { toast('Curso no encontrado', 'error'); return; }
-  confirmDelete(`¿Eliminar el curso "${c.name}"?`, async () => {
-    try {
-      await apiFetch('courses', 'delete', { id });
-      state.courses = state.courses.filter(x => String(x.id) !== String(id));
-      renderCourses(); updateDashboard(); toast('Curso eliminado', 'error');
-    } catch (e) { toast(`Error: ${e.message}`, 'error'); }
-  });
 }
 
 async function saveCourse() {
