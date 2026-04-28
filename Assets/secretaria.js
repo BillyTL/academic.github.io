@@ -317,7 +317,7 @@ function renderScheduleList(q) {
   });
   const tbody = document.getElementById('schedule-tbody');
   if (!tbody) return;
-  if (!filtered.length) { tbody.innerHTML = emptyRow(7); return; }
+  if (!filtered.length) { tbody.innerHTML = emptyRow(8); return; }
   tbody.innerHTML = filtered.map(item => `
     <tr>
       <td style="font-size:11px;color:var(--gray-400)">${item.id || '—'}</td>
