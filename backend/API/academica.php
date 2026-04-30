@@ -64,6 +64,35 @@ function handleSubjects($pdo) {
     return;
   }
 
+  // MY_LIST: materias inscritas del estudiante autenticado
+  if ($action === 'my_list') {
+    $body     = json_decode(file_get_contents('php://input'), true);
+    $userId   = intval($body['Id_usuario'] ?? 0);
+    if (!$userId) { http_response_code(400); echo json_encode(['error' => 'Id_usuario requerido']); return; }
+    try {
+      $stmt = $pdo->prepare('SELECT Id_estudiante FROM Estudiantes WHERE ID_usuario = :uid LIMIT 1');
+      $stmt->execute([':uid' => $userId]);
+      $est = $stmt->fetch();
+      if (!$est) { echo json_encode([]); return; }
+      $studentId = $est['Id_estudiante'];
+
+      $sql = "SELECT DISTINCT m.Id_Materia, m.Nombre, u.nombre AS Docente
+              FROM Materias m
+              JOIN Horarios h ON h.Id_Materia = m.Id_Materia
+              JOIN Inscripcion i ON i.Id_curso = h.id_curso
+              LEFT JOIN Docente_Materia dm ON dm.Id_Materia = m.Id_Materia
+              LEFT JOIN Docente d ON dm.ID_docente = d.ID_docente
+              LEFT JOIN Usuario u ON d.ID_usuario = u.ID
+              WHERE i.ID_Estudiante = :sid";
+      $stmt2 = $pdo->prepare($sql);
+      $stmt2->execute([':sid' => $studentId]);
+      echo json_encode($stmt2->fetchAll());
+    } catch (PDOException $e) {
+      echo json_encode([]);
+    }
+    return;
+  }
+
   if ($hasTeacherColumn) {
     echo json_encode($pdo->query("SELECT m.Id_Materia AS id, m.Nombre AS name, m.ID_docente AS teacherId, u.nombre AS teacher FROM Materias m LEFT JOIN Docente d ON m.ID_docente=d.ID_docente LEFT JOIN Usuario u ON d.ID_usuario=u.ID")->fetchAll());
   } else {
@@ -192,6 +221,34 @@ function handleSchedule($pdo) {
     return;
   }
 
+  // MY_LIST: horarios del curso del estudiante autenticado
+  if ($action === 'my_list') {
+    $body   = json_decode(file_get_contents('php://input'), true);
+    $userId = intval($body['Id_usuario'] ?? 0);
+    if (!$userId) { http_response_code(400); echo json_encode(['error' => 'Id_usuario requerido']); return; }
+    try {
+      $stmt = $pdo->prepare('SELECT Id_curso FROM Estudiantes WHERE ID_usuario = :uid LIMIT 1');
+      $stmt->execute([':uid' => $userId]);
+      $est = $stmt->fetch();
+      if (!$est) { echo json_encode([]); return; }
+
+      $sql = "SELECT h.Id_Horario AS id, h.Dia, h.HoraInicio AS Hora_inicio, h.HoraFin AS Hora_fin,
+                     m.Nombre AS materia, u.nombre AS docente, h.Aula
+              FROM Horarios h
+              JOIN Materias m  ON h.Id_Materia  = m.Id_Materia
+              JOIN Docente d   ON h.ID_docente  = d.ID_docente
+              JOIN Usuario u   ON d.ID_usuario  = u.ID
+              WHERE h.id_curso = :courseId
+              ORDER BY FIELD(h.Dia,'Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'), h.HoraInicio";
+      $stmt2 = $pdo->prepare($sql);
+      $stmt2->execute([':courseId' => $est['Id_curso']]);
+      echo json_encode($stmt2->fetchAll());
+    } catch (PDOException $e) {
+      echo json_encode([]);
+    }
+    return;
+  }
+
   $sql = "SELECT h.Id_Horario AS id, CONCAT(c.Nivel,' ',c.Paralelo) AS course, h.Dia AS day, h.HoraInicio AS start, h.HoraFin AS end, m.Nombre AS subject, u.nombre AS teacher, h.Aula AS room FROM Horarios h JOIN Curso c ON h.id_curso=c.ID_Curso JOIN Materias m ON h.Id_Materia=m.Id_Materia JOIN Docente d ON h.ID_docente=d.ID_docente JOIN Usuario u ON d.ID_usuario=u.ID";
   echo json_encode($pdo->query($sql)->fetchAll());
 }
@@ -282,13 +339,13 @@ function handleAttendance($pdo) {
 
     try {
       // Upsert: update if record exists for same student+date, otherwise insert
-      $check = $pdo->prepare('SELECT ID_Asistencia FROM Asistencia WHERE ID_Estudiante=:s AND Fecha=:d');
+      $check = $pdo->prepare('SELECT ID_asistencia FROM Asistencia WHERE Id_estudiante=:s AND Fecha=:d');
       $check->execute([':s'=>$studentId,':d'=>$date]);
       $existing = $check->fetch();
       if ($existing) {
-        $pdo->prepare('UPDATE Asistencia SET Estado=:e WHERE ID_Asistencia=:id')->execute([':e'=>$status,':id'=>$existing['ID_Asistencia']]);
+        $pdo->prepare('UPDATE Asistencia SET Estado=:e WHERE ID_asistencia=:id')->execute([':e'=>$status,':id'=>$existing['ID_asistencia']]);
       } else {
-        $pdo->prepare('INSERT INTO Asistencia (ID_Estudiante, Fecha, Estado) VALUES (:s,:d,:e)')->execute([':s'=>$studentId,':d'=>$date,':e'=>$status]);
+        $pdo->prepare('INSERT INTO Asistencia (Id_estudiante, ID_Docente, Id_Materia, Fecha, Estado) VALUES (:s, 1, 1, :d,:e)')->execute([':s'=>$studentId,':d'=>$date,':e'=>$status]);
       }
       echo json_encode(['success' => true]);
     } catch (PDOException $e) {
@@ -297,8 +354,34 @@ function handleAttendance($pdo) {
     return;
   }
 
+  // MY_LIST: asistencia del estudiante autenticado
+  if ($action === 'my_list') {
+    $body   = json_decode(file_get_contents('php://input'), true);
+    $userId = intval($body['Id_usuario'] ?? 0);
+    if (!$userId) { http_response_code(400); echo json_encode(['error' => 'Id_usuario requerido']); return; }
+    try {
+      $stmt = $pdo->prepare('SELECT Id_estudiante FROM Estudiantes WHERE ID_usuario = :uid LIMIT 1');
+      $stmt->execute([':uid' => $userId]);
+      $est = $stmt->fetch();
+      if (!$est) { echo json_encode([]); return; }
+
+      $sql = "SELECT a.ID_asistencia AS id, a.Fecha AS fecha, a.Estado AS estado,
+                     m.Nombre AS materia
+              FROM Asistencia a
+              LEFT JOIN Materias m ON a.Id_Materia = m.Id_Materia
+              WHERE a.Id_estudiante = :sid
+              ORDER BY a.Fecha DESC";
+      $stmt2 = $pdo->prepare($sql);
+      $stmt2->execute([':sid' => $est['Id_estudiante']]);
+      echo json_encode($stmt2->fetchAll());
+    } catch (PDOException $e) {
+      echo json_encode([]);
+    }
+    return;
+  }
+
   try {
-    $sql = "SELECT a.ID_Asistencia AS id, u.nombre AS student, CONCAT(c.Nivel,' ',c.Paralelo) AS course, a.Fecha AS date, a.Estado AS status FROM Asistencia a JOIN Estudiantes e ON a.ID_Estudiante=e.Id_estudiante JOIN Usuario u ON e.ID_usuario=u.ID JOIN Curso c ON e.Id_curso=c.ID_Curso";
+    $sql = "SELECT a.ID_asistencia AS id, u.nombre AS student, CONCAT(c.Nivel,' ',c.Paralelo) AS course, a.Fecha AS date, a.Estado AS status FROM Asistencia a JOIN Estudiantes e ON a.Id_estudiante=e.Id_estudiante JOIN Usuario u ON e.ID_usuario=u.ID JOIN Curso c ON e.Id_curso=c.ID_Curso";
     echo json_encode($pdo->query($sql)->fetchAll());
   } catch (PDOException $e) {
     echo json_encode([]);
@@ -329,14 +412,14 @@ function handleGrades($pdo) {
 
     try {
       if ($id) {
-        $pdo->prepare('UPDATE Calificaciones SET Id_Estudiante=:s, Id_Materia=:m, Nota=:n, Periodo=:p WHERE Id_Calificacion=:id')
-            ->execute([':s'=>$studentId,':m'=>$subjectId,':n'=>$nota,':p'=>$periodo,':id'=>$id]);
+        $pdo->prepare('UPDATE Calificaciones SET Id_estudiante=:s, Id_Materia=:m, Nota=:n WHERE Id_Calificacion=:id')
+            ->execute([':s'=>$studentId,':m'=>$subjectId,':n'=>$nota,':id'=>$id]);
       } else {
-        $pdo->prepare('INSERT INTO Calificaciones (Id_Estudiante, Id_Materia, Nota, Periodo) VALUES (:s,:m,:n,:p)')
-            ->execute([':s'=>$studentId,':m'=>$subjectId,':n'=>$nota,':p'=>$periodo]);
+        $pdo->prepare('INSERT INTO Calificaciones (Id_estudiante, Id_Materia, Nota, Id_curso) VALUES (:s,:m,:n,(SELECT Id_curso FROM Estudiantes WHERE Id_estudiante=:s2))')
+            ->execute([':s'=>$studentId,':m'=>$subjectId,':n'=>$nota,':s2'=>$studentId]);
         $id = (int)$pdo->lastInsertId();
       }
-      $fetch = $pdo->prepare("SELECT cal.Id_Calificacion AS id, u.nombre AS student, CONCAT(c.Nivel,' ',c.Paralelo) AS course, mat.Nombre AS subject, cal.Nota AS nota, cal.Periodo AS periodo FROM Calificaciones cal JOIN Estudiantes e ON cal.Id_Estudiante=e.Id_estudiante JOIN Usuario u ON e.ID_usuario=u.ID JOIN Curso c ON e.Id_curso=c.ID_Curso JOIN Materias mat ON cal.Id_Materia=mat.Id_Materia WHERE cal.Id_Calificacion=:id");
+      $fetch = $pdo->prepare("SELECT cal.Id_Calificacion AS id, u.nombre AS student, CONCAT(c.Nivel,' ',c.Paralelo) AS course, mat.Nombre AS subject, cal.Nota AS nota FROM Calificaciones cal JOIN Estudiantes e ON cal.Id_estudiante=e.Id_estudiante JOIN Usuario u ON e.ID_usuario=u.ID JOIN Curso c ON e.Id_curso=c.ID_Curso JOIN Materias mat ON cal.Id_Materia=mat.Id_Materia WHERE cal.Id_Calificacion=:id");
       $fetch->execute([':id' => $id]);
       echo json_encode(['grade' => $fetch->fetch()]);
     } catch (PDOException $e) {
@@ -358,8 +441,34 @@ function handleGrades($pdo) {
     return;
   }
 
+  // MY_LIST: calificaciones del estudiante autenticado
+  if ($action === 'my_list') {
+    $body   = json_decode(file_get_contents('php://input'), true);
+    $userId = intval($body['Id_usuario'] ?? 0);
+    if (!$userId) { http_response_code(400); echo json_encode(['error' => 'Id_usuario requerido']); return; }
+    try {
+      $stmt = $pdo->prepare('SELECT Id_estudiante FROM Estudiantes WHERE ID_usuario = :uid LIMIT 1');
+      $stmt->execute([':uid' => $userId]);
+      $est = $stmt->fetch();
+      if (!$est) { echo json_encode([]); return; }
+
+      $sql = "SELECT cal.Id_Calificacion AS id, mat.Id_Materia, mat.Nombre,
+                     cal.Nota
+              FROM Calificaciones cal
+              JOIN Materias mat ON cal.Id_Materia = mat.Id_Materia
+              WHERE cal.Id_estudiante = :sid
+              ORDER BY mat.Nombre";
+      $stmt2 = $pdo->prepare($sql);
+      $stmt2->execute([':sid' => $est['Id_estudiante']]);
+      echo json_encode($stmt2->fetchAll());
+    } catch (PDOException $e) {
+      echo json_encode([]);
+    }
+    return;
+  }
+
   try {
-    $sql = "SELECT cal.Id_Calificacion AS id, u.nombre AS student, CONCAT(c.Nivel,' ',c.Paralelo) AS course, mat.Nombre AS subject, cal.Nota AS nota, cal.Periodo AS periodo FROM Calificaciones cal JOIN Estudiantes e ON cal.Id_Estudiante=e.Id_estudiante JOIN Usuario u ON e.ID_usuario=u.ID JOIN Curso c ON e.Id_curso=c.ID_Curso JOIN Materias mat ON cal.Id_Materia=mat.Id_Materia";
+    $sql = "SELECT cal.Id_Calificacion AS id, u.nombre AS student, CONCAT(c.Nivel,' ',c.Paralelo) AS course, mat.Nombre AS subject, cal.Nota AS nota FROM Calificaciones cal JOIN Estudiantes e ON cal.Id_estudiante=e.Id_estudiante JOIN Usuario u ON e.ID_usuario=u.ID JOIN Curso c ON e.Id_curso=c.ID_Curso JOIN Materias mat ON cal.Id_Materia=mat.Id_Materia";
     echo json_encode($pdo->query($sql)->fetchAll());
   } catch (PDOException $e) {
     echo json_encode([]);
