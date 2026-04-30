@@ -1,145 +1,962 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Gestión Académica — Estudiante</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/dashboard.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduCore — Panel del Estudiante</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ─── VARIABLES ──────────────────────────────────────────── */
+    :root {
+      --sidebar-w: 230px;
+      --header-h: 60px;
+
+      /* Paleta verde oscuro (igual que admin) */
+      --sidebar-bg:   #1a3a2e;
+      --sidebar-text: #c8ddd5;
+      --sidebar-active-bg: rgba(255,255,255,.10);
+      --sidebar-active-text: #fff;
+      --sidebar-hover-bg: rgba(255,255,255,.06);
+      --logo-accent:  #4ade80;
+
+      --bg:           #f4f6f5;
+      --surface:      #ffffff;
+      --border:       #e4eae8;
+      --text:         #1c2a24;
+      --text-muted:   #6b8278;
+
+      --accent:       #1a7a50;
+      --accent-light: #e8f5ef;
+      --accent-hover: #155f3e;
+
+      --green-top:    #22c55e;
+      --teal-top:     #14b8a6;
+      --amber-top:    #f59e0b;
+      --red-top:      #ef4444;
+      --purple-top:   #8b5cf6;
+      --blue-top:     #3b82f6;
+
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.09);
+
+      --radius: 10px;
+      --font: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* ─── RESET ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ─── SIDEBAR ─────────────────────────────────────────────── */
+    #sidebar {
+      width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 200;
+      transition: transform .25s ease;
+    }
+    .sidebar-logo {
+      padding: 0 18px;
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .s-icon {
+      width: 32px; height: 32px;
+      background: var(--logo-accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .sidebar-logo h2 { font-size: 15px; font-weight: 700; color: #fff; }
+    .sidebar-logo p  { font-size: 11px; color: var(--sidebar-text); }
+
+    .sidebar-nav { padding: 14px 10px; flex: 1; overflow-y: auto; }
+    .nav-section {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(200,221,213,.45);
+      padding: 10px 8px 4px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      color: var(--sidebar-text);
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: background .15s, color .15s;
+      user-select: none;
+      position: relative;
+    }
+    .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; opacity: .75; }
+    .nav-item:hover { background: var(--sidebar-hover-bg); color: #fff; }
+    .nav-item:hover svg { opacity: 1; }
+    .nav-item.nav-item--active,
+    .nav-item.active {
+      background: var(--sidebar-active-bg);
+      color: var(--sidebar-active-text);
+      font-weight: 600;
+    }
+    .nav-item.nav-item--active svg,
+    .nav-item.active svg { opacity: 1; }
+    .nav-item.nav-item--active::before,
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 20%; bottom: 20%;
+      width: 3px;
+      background: var(--logo-accent);
+      border-radius: 0 3px 3px 0;
+    }
+
+    /* Badge contador */
+    .nav-badge {
+      margin-left: auto;
+      background: var(--logo-accent);
+      color: #1a3a2e;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 20px;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    /* Overlay móvil */
+    #sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 190;
+    }
+    #sidebar-overlay.sidebar-overlay--visible { display: block; }
+
+    /* ─── LAYOUT PRINCIPAL ────────────────────────────────────── */
+    #main-wrap {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ─── HEADER ──────────────────────────────────────────────── */
+    #header {
+      height: var(--header-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .hamburger {
+      display: none;
+      background: none; border: none; cursor: pointer;
+      color: var(--text);
+      padding: 6px;
+    }
+    .header-spacer { flex: 1; }
+    .header-clock {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: .03em;
+    }
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .avatar {
+      width: 34px; height: 34px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .uname { font-size: 13px; font-weight: 600; }
+    .urole { font-size: 11px; color: var(--text-muted); }
+
+    .btn-logout {
+      display: flex; align-items: center; gap: 6px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 13px;
+      font-size: 12.5px;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+      color: var(--text);
+      transition: background .15s, border-color .15s;
+    }
+    .btn-logout:hover { background: var(--bg); border-color: #c5d0cc; }
+
+    /* ─── CONTENIDO ───────────────────────────────────────────── */
+    #main-content { flex: 1; padding: 26px 28px; }
+
+    .page { display: none; }
+    .page.page--active,
+    .page.active { display: block; }
+
+    /* ─── PAGE HEADER ─────────────────────────────────────────── */
+    .page-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+    .page-header h2 { font-size: 20px; font-weight: 700; }
+    .page-header p  { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ─── STAT CARDS (Dashboard) ──────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      box-shadow: var(--shadow-sm);
+      border-top: 3px solid transparent;
+      transition: box-shadow .2s, transform .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .stat-card .sc-icon {
+      width: 38px; height: 38px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+    }
+    .stat-card .sc-icon svg { width: 19px; height: 19px; }
+    .stat-card .sc-value { font-size: 30px; font-weight: 700; line-height: 1; }
+    .stat-card .sc-label { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+    .stat-card .sc-sub   { font-size: 11.5px; margin-top: 6px; font-weight: 500; }
+
+    /* colores por card */
+    .sc--green  { border-top-color: var(--green-top); }
+    .sc--green  .sc-icon { background: #dcfce7; color: #15803d; }
+    .sc--green  .sc-sub  { color: #15803d; }
+
+    .sc--teal   { border-top-color: var(--teal-top); }
+    .sc--teal   .sc-icon { background: #ccfbf1; color: #0f766e; }
+    .sc--teal   .sc-sub  { color: #0f766e; }
+
+    .sc--amber  { border-top-color: var(--amber-top); }
+    .sc--amber  .sc-icon { background: #fef3c7; color: #b45309; }
+    .sc--amber  .sc-sub  { color: #b45309; }
+
+    .sc--red    { border-top-color: var(--red-top); }
+    .sc--red    .sc-icon { background: #fee2e2; color: #b91c1c; }
+    .sc--red    .sc-sub  { color: #b91c1c; }
+
+    .sc--purple { border-top-color: var(--purple-top); }
+    .sc--purple .sc-icon { background: #ede9fe; color: #6d28d9; }
+    .sc--purple .sc-sub  { color: #6d28d9; }
+
+    .sc--blue   { border-top-color: var(--blue-top); }
+    .sc--blue   .sc-icon { background: #dbeafe; color: #1d4ed8; }
+    .sc--blue   .sc-sub  { color: #1d4ed8; }
+
+    /* ─── TOOLBAR ─────────────────────────────────────────────── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 180px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 8px 12px 8px 36px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-family: var(--font);
+      font-size: 13px;
+      background: var(--surface);
+      outline: none;
+      transition: border-color .15s;
+    }
+    .search-box input:focus { border-color: var(--accent); }
+    .search-box .si {
+      position: absolute;
+      left: 10px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    select.form-select {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-family: var(--font);
+      font-size: 13px;
+      background: var(--surface);
+      outline: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: background .15s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    /* ─── CARD ────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-body { padding: 0; }
+
+    /* ─── TABLE ───────────────────────────────────────────────── */
+    .tabla-wrap { overflow-x: auto; }
+    .tabla {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    .tabla thead th {
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: #f9fbfa;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .tabla tbody tr {
+      border-bottom: 1px solid #f0f4f2;
+      transition: background .12s;
+    }
+    .tabla tbody tr:last-child { border-bottom: none; }
+    .tabla tbody tr:hover { background: #f6faf8; }
+    .tabla td { padding: 13px 16px; vertical-align: middle; }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .badge--aprobado  { background: #dcfce7; color: #15803d; }
+    .badge--reprobado { background: #fee2e2; color: #b91c1c; }
+    .badge--pendiente { background: #fef9c3; color: #854d0e; }
+    .badge--pagado    { background: #dcfce7; color: #15803d; }
+    .badge--pendientep{ background: #fef9c3; color: #854d0e; }
+
+    .nota-aprobado { color: #15803d; font-weight: 700; }
+    .nota-reprobado { color: #b91c1c; font-weight: 700; }
+    .nota-valor { font-weight: 600; }
+
+    /* ─── SECCIÓN NOTAS — Filtros bimestre ────────────────────── */
+    .filtros-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .filtro-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-family: var(--font);
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .filtro-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filtro-btn--active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .materia-notas-block { margin-bottom: 22px; }
+    .materia-notas-titulo {
+      font-size: 15px;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .nota-promedio {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      background: var(--accent-light);
+    }
+
+    /* ─── HORARIO SEMANAL — tarjetas ─────────────────────────── */
+    #horario-semanal {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 14px;
+    }
+    .horario-dia { }
+    .horario-dia__title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: var(--bg);
+    }
+    .horario-card {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      box-shadow: var(--shadow-sm);
+      border-left: 3px solid;
+    }
+    .horario-card__time { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .horario-card__materia { font-size: 13px; font-weight: 700; margin-top: 3px; }
+    .horario-card__meta { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
+
+    /* ─── TABLA VACÍA ─────────────────────────────────────────── */
+    .tabla-vacia {
+      text-align: center;
+      padding: 40px !important;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 50px 20px;
+      color: var(--text-muted);
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    /* ─── RESUMEN MATERIAS ────────────────────────────────────── */
+    #materias-resumen {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .resumen-card {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 12px 18px;
+      box-shadow: var(--shadow-sm);
+      min-width: 100px;
+      text-align: center;
+    }
+    .rc-value { font-size: 22px; font-weight: 700; }
+    .rc-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ─── LOADING OVERLAY ─────────────────────────────────────── */
+    #loading-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(255,255,255,.7);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── TOAST ───────────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--text);
+      color: #fff;
+      padding: 11px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow-md);
+      z-index: 900;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+    }
+    #toast.toast--visible { opacity: 1; transform: translateY(0); }
+    #toast.toast--success { background: #15803d; }
+    #toast.toast--error   { background: #b91c1c; }
+    #toast.toast--info    { background: var(--accent); }
+
+    /* ─── SIDEBAR CLOSE BTN (mobile) ──────────────────────────── */
+    .sidebar-close {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--sidebar-text);
+      cursor: pointer;
+      margin-left: auto;
+      padding: 4px;
+    }
+
+    /* ─── RESPONSIVE ──────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      #sidebar {
+        transform: translateX(-100%);
+      }
+      #sidebar.sidebar--open {
+        transform: translateX(0);
+        box-shadow: 4px 0 20px rgba(0,0,0,.2);
+      }
+      .sidebar-close { display: flex; }
+      #main-wrap { margin-left: 0; }
+      .hamburger { display: flex; }
+      #main-content { padding: 18px 16px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-<div id="app">
-  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+<!-- OVERLAY MÓVIL -->
+<div id="sidebar-overlay"></div>
 
-  <aside id="sidebar">
-    <div class="sidebar-logo">
-      <div class="s-wrap">
-        <div class="s-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-          </svg>
-        </div>
-        <div>
-          <h2 style="color: aliceblue;">EduCore</h2>
-          <p>Gestión Académica</p>
-        </div>
-        <button class="sidebar-close" onclick="closeSidebar()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="s-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a3a2e" stroke-width="2.5">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+      </svg>
+    </div>
+    <div>
+      <h2>EduCore</h2>
+      <p>Estudiante</p>
+    </div>
+    <button class="sidebar-close" id="btn-sidebar-close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" data-page="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      <span>Dashboard</span>
     </div>
 
-    <nav class="sidebar-nav">
-      <div class="nav-section">Principal</div>
+    <div class="nav-section">Académico</div>
 
-      <div class="nav-item" onclick="showPage('page-dashboard')">Dashboard</div>
-      <div class="nav-item" onclick="showPage('page-asistencia')">Asistencia</div>
-      <div class="nav-item" onclick="showPage('page-notas')">Notas</div>
-      <div class="nav-item" onclick="showPage('page-materias')">Materias</div>
-      <div class="nav-item" onclick="showPage('page-pagos')">Pagos</div>
-      <div class="nav-item" onclick="showPage('page-horarios')">Horarios</div>
-    </nav>
-  </aside>
+    <!-- Materias (← tabla Materia + Inscripcion del diagrama) -->
+    <div class="nav-item" data-page="materias">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      <span>Materias</span>
+    </div>
 
+    <!-- Notas (← tabla Calificacion del diagrama) -->
+    <div class="nav-item" data-page="notas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      <span>Calificaciones</span>
+    </div>
+
+    <!-- Horarios (← horarios relacionados al Curso/Materia) -->
+    <div class="nav-item" data-page="horarios">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      <span>Horarios</span>
+    </div>
+
+    <!-- Asistencia (← tabla Asistencia del diagrama) -->
+    <div class="nav-item" data-page="asistencia">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span>Asistencia</span>
+    </div>
+
+    <div class="nav-section">Finanzas</div>
+
+    <!-- Pagos (← tabla Pago + Factura del diagrama) -->
+    <div class="nav-item" data-page="pagos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="1" y="4" width="22" height="16" rx="2"/>
+        <line x1="1" y1="10" x2="23" y2="10"/>
+      </svg>
+      <span>Pagos</span>
+    </div>
+  </nav>
+</aside>
+
+<!-- LAYOUT PRINCIPAL -->
+<div id="main-wrap">
+
+  <!-- HEADER -->
   <header id="header">
-    <button class="hamburger" onclick="openSidebar()">
+    <button class="hamburger" id="btn-menu">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="3" y1="6" x2="21" y2="6"/>
         <line x1="3" y1="12" x2="21" y2="12"/>
         <line x1="3" y1="18" x2="21" y2="18"/>
       </svg>
     </button>
-
     <div class="header-spacer"></div>
     <div class="header-clock" id="header-clock"></div>
-
-    <button class="notif-btn" onclick="toast('Tienes 3 notificaciones nuevas')">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-      </svg>
-      <span class="notif-dot"></span>
-    </button>
-
     <div class="header-user">
       <div class="avatar" id="user-avatar">E</div>
-      <div class="header-user-info">
+      <div>
         <div class="uname" id="user-name">Hola, Estudiante</div>
-        <div class="urole" id="user-role">Estudiante</div>
+        <div class="urole">Estudiante</div>
       </div>
     </div>
-
-    <button class="btn btn-secondary btn-sm" onclick="doLogout()">Salir</button>
+    <button class="btn-logout" id="btn-logout">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Salir
+    </button>
   </header>
 
+  <!-- CONTENIDO -->
   <main id="main-content">
 
-    <!-- DASHBOARD -->
-    <div id="page-dashboard" class="page active">
+    <!-- ══════════════════════════════════════════════════
+         DASHBOARD  (relacionado a: Estudiante + todas las tablas)
+         ══════════════════════════════════════════════════ -->
+    <div id="dashboard" class="page active">
       <div class="page-header">
-        <div class="page-header-left">
+        <div>
           <h2>Dashboard</h2>
-          <p>Bienvenido al Sistema EduCore</p>
+          <p>Bienvenido a tu panel académico</p>
         </div>
       </div>
-      <div class="stats-grid" id="dash-stats"></div>
-    </div>
 
-    <!-- ASISTENCIA -->
-    <div id="page-asistencia" class="page">
-      <div class="page-header"><h2>Asistencia</h2></div>
-      <p>Registro y consulta de asistencia.</p>
-    </div>
+      <!-- KPIs que se llenan desde renderDashboard() -->
+      <div class="stats-grid">
+        <!-- Materias inscritas → Inscripcion + Materia -->
+        <div class="stat-card sc--green">
+          <div class="sc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          </div>
+          <div class="sc-value" id="dashboard-total-materias">0</div>
+          <div class="sc-label">Materias Inscritas</div>
+          <div class="sc-sub">↑ Inscritas este período</div>
+        </div>
 
-    <!-- NOTAS -->
-    <div id="page-notas" class="page">
-      <div class="page-header"><h2>Notas</h2></div>
-      <p>Visualización de calificaciones.</p>
-    </div>
+        <!-- Aprobadas → Calificacion (Nota ≥ 51) -->
+        <div class="stat-card sc--teal">
+          <div class="sc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div class="sc-value" id="dashboard-aprobadas">0</div>
+          <div class="sc-label">Aprobadas</div>
+          <div class="sc-sub" id="dashboard-aprobadas-sub">Nota ≥ 51</div>
+        </div>
 
-    <!-- MATERIAS -->
-    <div id="page-materias" class="page">
-      <div class="page-header"><h2>Materias</h2></div>
-      <p>Listado de materias inscritas.</p>
-    </div>
+        <!-- Reprobadas → Calificacion (Nota < 51) -->
+        <div class="stat-card sc--red">
+          <div class="sc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </div>
+          <div class="sc-value" id="dashboard-reprobadas">0</div>
+          <div class="sc-label">Reprobadas</div>
+          <div class="sc-sub">Nota &lt; 51</div>
+        </div>
 
-    <!-- PAGOS -->
-    <div id="page-pagos" class="page">
-      <div class="page-header"><h2>Pagos</h2></div>
-      <p>Gestión de pagos.</p>
-    </div>
+        <!-- Horarios → tabla schedules -->
+        <div class="stat-card sc--amber">
+          <div class="sc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div class="sc-value" id="dashboard-total-horarios">0</div>
+          <div class="sc-label">Clases Programadas</div>
+          <div class="sc-sub">Esta semana</div>
+        </div>
 
-    <!-- HORARIOS -->
-    <div id="page-horarios" class="page">
-      <div class="page-header"><h2>Horarios</h2></div>
-      <p>Visualización de horarios.</p>
-    </div>
+        <!-- Pagos → tabla Pago -->
+        <div class="stat-card sc--purple">
+          <div class="sc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="4" width="22" height="16" rx="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+          </div>
+          <div class="sc-value" id="dashboard-total-pagos">0</div>
+          <div class="sc-label">Pagos Registrados</div>
+          <div class="sc-sub" id="dashboard-pagos-sub">Ver detalle</div>
+        </div>
+
+        <!-- Asistencia → tabla Asistencia -->
+        <div class="stat-card sc--blue">
+          <div class="sc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="sc-value" id="dashboard-asistencia">—</div>
+          <div class="sc-label">Asistencia</div>
+          <div class="sc-sub">% de presencia</div>
+        </div>
+      </div>
+    </div><!-- /dashboard -->
+
+
+    <!-- ══════════════════════════════════════════════════
+         MATERIAS  (BD: Materia ← Inscripcion ← Estudiante + Calificacion)
+         ══════════════════════════════════════════════════ -->
+    <div id="materias" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Materias</h2>
+          <p>Materias inscritas en el período actual</p>
+        </div>
+      </div>
+
+      <!-- Resumen rápido -->
+      <div id="materias-resumen"></div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <input type="text" id="buscar-materia" placeholder="Buscar materia…">
+          <svg class="si" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          </svg>
+        </div>
+        <select id="filtro-estado" class="form-select">
+          <option value="">Todos los estados</option>
+          <option value="aprobado">Aprobado</option>
+          <option value="reprobado">Reprobado</option>
+          <option value="pendiente">Sin calificar</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          Listado de Materias
+        </div>
+        <div class="card-body">
+          <div class="tabla-wrap">
+            <!-- renderMaterias() puebla esta tabla -->
+            <table class="tabla" id="tablaMaterias"></table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /materias -->
+
+
+    <!-- ══════════════════════════════════════════════════
+         NOTAS  (BD: Calificacion → Id_calificacion, Id_curso, Id_estudiante, Id_materia, Nota)
+         ══════════════════════════════════════════════════ -->
+    <div id="notas" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Calificaciones</h2>
+          <p>Detalle de evaluaciones por materia y bimestre</p>
+        </div>
+      </div>
+
+      <!-- Filtros de bimestre generados dinámicamente -->
+      <div class="filtros-bar" id="filtros-bimestre"></div>
+
+      <!-- renderNotas() inyecta aquí bloques por materia -->
+      <div id="notas-contenido"></div>
+    </div><!-- /notas -->
+
+
+    <!-- ══════════════════════════════════════════════════
+         HORARIOS  (BD: Horario → Dia, Hora_inicio, Hora_fin, Id_materia, Id_docente, Id_curso)
+         ══════════════════════════════════════════════════ -->
+    <div id="horarios" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Horarios</h2>
+          <p>Distribución semanal de clases</p>
+        </div>
+      </div>
+
+      <!-- renderHorario() elige entre #horario-semanal (tarjetas) o #tablaHorario (tabla) -->
+      <div id="horario-semanal"></div>
+      <div class="card" id="horario-tabla-wrap" style="display:none; margin-top:16px;">
+        <div class="card-body">
+          <div class="tabla-wrap">
+            <table class="tabla" id="tablaHorario"></table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /horarios -->
+
+
+    <!-- ══════════════════════════════════════════════════
+         ASISTENCIA  (BD: Asistencia → id_asistencia, id_estudiante, estado, id_docente, id_materia)
+         ══════════════════════════════════════════════════ -->
+    <div id="asistencia" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Asistencia</h2>
+          <p>Registro de presencia por materia</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+          Registro de Asistencia
+        </div>
+        <div class="card-body">
+          <div class="tabla-wrap">
+            <table class="tabla" id="tablaAsistencia"></table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /asistencia -->
+
+
+    <!-- ══════════════════════════════════════════════════
+         PAGOS  (BD: Pago → id_pago, id_estudiante, fecha, metodo, monto  +  Factura → id_factura, id_pago)
+         ══════════════════════════════════════════════════ -->
+    <div id="pagos" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Pagos</h2>
+          <p>Historial de pagos y facturas generadas</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="1" y="4" width="22" height="16" rx="2"/>
+            <line x1="1" y1="10" x2="23" y2="10"/>
+          </svg>
+          Historial de Pagos
+        </div>
+        <div class="card-body">
+          <div class="tabla-wrap">
+            <table class="tabla" id="tablaPagos"></table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /pagos -->
 
   </main>
-</div>
+</div><!-- /main-wrap -->
 
-<script>
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-// ======= SIDEBAR =======
-function openSidebar(){
-  document.getElementById('sidebar').classList.add('open');
-  document.getElementById('sidebar-overlay').classList.add('show');
-}
-function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('show');
-}
-</script>
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay"><div class="spinner"></div></div>
 
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script src="/js/estu.js"></script>
+<script src="/Assets/estudiante.js"></script>
 </body>
 </html>
